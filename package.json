@@ -13,6 +13,12 @@
       "require": "./dist/index.cjs"
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Outburn-IL/fumifier.git"
+  },
+  "bugs": "https://github.com/Outburn-IL/fumifier/issues",
+  "homepage": "https://github.com/Outburn-IL/fumifier#readme",
   "scripts": {
     "build": "npm run clean && tsup",
     "clean": "rimraf dist",
