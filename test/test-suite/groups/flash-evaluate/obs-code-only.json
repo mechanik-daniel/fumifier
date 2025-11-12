@@ -1,0 +1,39 @@
+[
+  {
+    "skip": false,
+    "description": "ObsCodeOnly profile with incomplete code - should fail validation for missing mandatory display in slice",
+    "data": null,
+    "code": "F5130",
+    "expr-file": "obs-code-only.fume"
+  },
+  {
+    "skip": false,
+    "description": "ObsCodeOnly profile without code - should fail validation for missing mandatory display element",
+    "data": null,
+    "code": "F5130",
+    "expr-file": "obs-code-only-2.fume"
+  },
+  {
+    "description": "ObsCodeOnly profile with complete mandatory elements - should pass and generate correct auto-values",
+    "data": null,
+    "result": {
+      "resourceType": "Observation",
+      "meta": {
+        "profile": [
+          "http://test.fumifier.fume.health/fhir/StructureDefinition/ObsCodeOnly"
+        ]
+      },
+      "status": "unknown",
+      "code": {
+        "coding": [
+          {
+            "system": "http://example.com/vital-signs-code",
+            "code": "123",
+            "display": "there we go"
+          }
+        ]
+      }
+    },
+    "expr-file": "obs-code-only-3.fume"
+  }
+]

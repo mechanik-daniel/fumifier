@@ -1,0 +1,6 @@
+{
+    "expr": "($a:=$rightNow();ms.($wait($));$b:=$rightNow();($b-$a)>= 28)",
+    "data": { "ms": [1,2,3,4,5,6,7] },
+    "bindings": {},
+    "result": true
+}

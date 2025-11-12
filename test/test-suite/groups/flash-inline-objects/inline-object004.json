@@ -1,0 +1,15 @@
+{
+  "description": "Inline object with subrule that overrides existing property",
+  "data": null,
+  "result": {
+    "resourceType": "Patient",
+    "address": [
+      {
+        "city": "Haifa",
+        "country": "IL",
+        "use": "home"
+      }
+    ]
+  },
+  "expr-file": "inline-object004.fume"
+}

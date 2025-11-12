@@ -1,0 +1,9 @@
+{
+  "description": "Identifier profile instance with fixed system overriding the assigned value",
+  "data": null,
+  "result": {
+    "system": "http://example.org/fixed-system",
+    "value": "123-456-789"
+  },
+  "expr-file": "auto-value003.fume"
+}

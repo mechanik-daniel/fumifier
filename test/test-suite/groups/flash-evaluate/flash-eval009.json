@@ -1,0 +1,17 @@
+{
+  "skip": false,
+  "data": null,
+  "bindings": {},
+  "result": {
+    "resourceType": "Patient",
+    "id": "abc",
+    "name": [
+      {
+        "period": {
+          "start": "2000-01-01"
+        }
+      }
+    ]
+  },
+  "expr-file": "flash-eval009.fume"
+}

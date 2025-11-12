@@ -1,0 +1,86 @@
+[
+    {
+        "expr": "$.[value,epochSeconds][]",
+        "data": [
+            {
+                "epochSeconds": 1578381600,
+                "value": 3
+            },
+            {
+                "epochSeconds": 1578381700,
+                "value": 5
+            }
+        ],
+        "bindings": {},
+        "result": [
+            [3, 1578381600],
+            [5, 1578381700]
+        ]
+    },
+    {
+        "expr": "$.[value,epochSeconds][]",
+        "data": [
+            {
+                "epochSeconds": 1578381600,
+                "value": 3
+            }
+        ],
+        "bindings": {},
+        "result": [
+            [3, 1578381600]
+        ]
+    },
+    {
+        "expr": "$.[value,epochSeconds]",
+        "data": [
+            {
+                "epochSeconds": 1578381600,
+                "value": 3
+            }
+        ],
+        "bindings": {},
+        "result": [3, 1578381600]
+    },
+    {
+        "expr": "singleArray",
+        "data": {
+            "singleArray": [{"foo":"bar"}]
+        },
+        "bindings": {},
+        "result": [
+            {
+                "foo": "bar"
+            }
+        ]
+    },
+    {
+        "expr": "singleArray[]",
+        "data": {
+            "singleArray": [{"foo":"bar"}]
+        },
+        "bindings": {},
+        "result": [
+            {
+                "foo": "bar"
+            }
+        ]
+    },
+    {
+        "expr": "(Instance: ['abc', 'def'] ~> $join('0')\nInstanceOf: Patient).id",
+        "data": null,
+        "bindings": {},
+        "result": "abc0def"
+    },
+    {
+        "expr": "(InstanceOf: Patient\n* id = ['abc', 'def'] ~> $join('0')).id",
+        "data": null,
+        "bindings": {},
+        "result": "abc0def"
+    },
+    {
+        "expr": "(InstanceOf: Extension\n* url = ['abc', 'def'] ~> $join('0')).url",
+        "data": null,
+        "bindings": {},
+        "result": "abc0def"
+    }
+]

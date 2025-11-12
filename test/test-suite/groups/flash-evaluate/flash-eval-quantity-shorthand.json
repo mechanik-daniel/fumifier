@@ -1,0 +1,66 @@
+[
+  {
+    "skip": false,
+    "description": "Quantity shorthand: number -> value",
+    "expr-file": "flash-eval-quantity-shorthand.fume",
+    "data": 42,
+    "bindings": {},
+    "result": {
+      "resourceType": "Patient",
+      "extension": [
+        {
+          "url": "http://example.com/fhir/StructureDefinition/test-extension",
+          "valueQuantity": { "value": 42 }
+        }
+      ]
+    }
+  },
+  {
+    "skip": false,
+    "description": "Quantity shorthand: string numeric -> coerced number",
+    "expr-file": "flash-eval-quantity-shorthand.fume",
+    "data": "42",
+    "bindings": {},
+    "result": {
+      "resourceType": "Patient",
+      "extension": [
+        {
+          "url": "http://example.com/fhir/StructureDefinition/test-extension",
+          "valueQuantity": { "value": 42 }
+        }
+      ]
+    }
+  },
+  {
+    "skip": false,
+    "description": "Quantity shorthand: array mix string/number -> last taken",
+    "expr-file": "flash-eval-quantity-shorthand.fume",
+    "data": ["13", 42],
+    "bindings": {},
+    "result": {
+      "resourceType": "Patient",
+      "extension": [
+        {
+          "url": "http://example.com/fhir/StructureDefinition/test-extension",
+          "valueQuantity": { "value": 42 }
+        }
+      ]
+    }
+  },
+  {
+    "skip": false,
+    "description": "Quantity shorthand: array mix string/object -> last object wins",
+    "expr-file": "flash-eval-quantity-shorthand.fume",
+    "data": ["42", {"value": "13"}],
+    "bindings": {},
+    "result": {
+      "resourceType": "Patient",
+      "extension": [
+        {
+          "url": "http://example.com/fhir/StructureDefinition/test-extension",
+          "valueQuantity": { "value": 13 }
+        }
+      ]
+    }
+  }
+]

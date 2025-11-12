@@ -1,0 +1,148 @@
+[
+  {
+    "skip": false,
+    "description": "Auto-generate code (should create MandatorySlice but FAIL on missing display)",
+    "data": null,
+    "code": "F5130",
+    "notes": "Should fail: MandatorySlice is required (min=1) and its display is mandatory (min=1)",
+    "expr-file": "comprehensive-slice-validation.fume"
+  },
+  {
+    "skip": false,
+    "description": "Auto-generate coding (should create MandatorySlice but FAIL on missing display)",
+    "data": null,
+    "code": "F5130",
+    "notes": "Should fail: Same as above - mandatory slice auto-created but display missing",
+    "expr-file": "comprehensive-slice-validation-2.fume"
+  },
+  {
+    "description": "Explicit mandatory slice without display - should FAIL",
+    "data": null,
+    "code": "F5130",
+    "notes": "Should fail: Explicitly targeting mandatory slice but display is missing",
+    "expr-file": "comprehensive-slice-validation-3.fume"
+  },
+  {
+    "description": "Complete mandatory slice - should PASS",
+    "data": null,
+    "result": {
+      "resourceType": "Observation",
+      "meta": {
+        "profile": [
+          "http://test.fumifier.fume.health/fhir/StructureDefinition/TestSliceValidation"
+        ]
+      },
+      "status": "unknown",
+      "code": {
+        "coding": [
+          {
+            "system": "http://example.com/optional-or-mandatory",
+            "code": "MANDATORY",
+            "display": "required display"
+          }
+        ]
+      }
+    },
+    "notes": "Should pass: All mandatory elements present",
+    "expr-file": "comprehensive-slice-validation-4.fume"
+  },
+  {
+    "skip": false,
+    "description": "Optional slice as empty rule with mandatory slice with missing display  -should FAIL",
+    "data": null,
+    "code": "F5140",
+    "bindings": {
+      "validationLevel": 15
+    },
+    "notes": "Should fail: Optional slice may be valid but the mandatory slice is missing its display (min=1)",
+    "expr-file": "comprehensive-slice-validation-5.fume"
+  },
+  {
+    "skip": false,
+    "description": "Optional slice as empty rule with mandatory slice with missing display  -should FAIL but inhibited",
+    "bindings": {
+      "logLevel": 13,
+      "validationLevel": 14
+    },
+    "data": null,
+    "result": {
+      "resourceType": "Observation",
+      "meta": {
+        "profile": [
+          "http://test.fumifier.fume.health/fhir/StructureDefinition/TestSliceValidation"
+        ]
+      },
+      "status": "unknown",
+      "code": {
+        "coding": [
+          {
+            "system": "http://example.com/optional-or-mandatory",
+            "code": "OPTIONAL"
+          }
+        ]
+      }
+    },
+    "notes": "Should NOT fail: Optional slice may be valid but the mandatory slice is missing its display (min=1), but the validation is inhibited",
+    "expr-file": "comprehensive-slice-validation-5.fume"
+  },
+  {
+    "description": "Base Observation (control) - should PASS",
+    "data": null,
+    "result": {
+      "resourceType": "Observation",
+      "status": "unknown",
+      "code": {
+        "coding": [
+          {
+            "system": "http://example.com/test"
+          }
+        ]
+      }
+    },
+    "notes": "Control: Base Observation has no slice constraints, should always pass",
+    "expr-file": "comprehensive-slice-validation-6.fume"
+  },
+  {
+    "description": "Profiled slice correctly uses target profile constrains - should PASS",
+    "data": null,
+    "result": {
+      "resourceType": "Patient",
+      "meta": {
+        "profile": [
+          "http://fhir.health.gov.il/StructureDefinition/il-core-patient"
+        ]
+      },
+      "extension": [
+        {
+          "url": "http://fhir.health.gov.il/StructureDefinition/ext-il-hmo",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-NullFlavor",
+                "code": "UNK"
+              }
+            ]
+          }
+        }
+      ],
+      "identifier": [
+        {
+          "system": "http://fhir.health.gov.il/identifier/il-national-id",
+          "value": "123456789"
+        }
+      ],
+      "name": [
+        {
+          "family": "Doe",
+          "given": [
+            "John",
+            "A."
+          ]
+        }
+      ],
+      "gender": "male",
+      "birthDate": "1980-01-01"
+    },
+    "expr-file": "comprehensive-slice-validation-7.fume"
+  }
+]

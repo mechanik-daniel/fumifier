@@ -1,0 +1,17 @@
+{
+  "description": "Injection of extension URL in a standalone instance of ext-il-hmo",
+  "data": "HMO Name",
+  "result": {
+    "url": "http://fhir.health.gov.il/StructureDefinition/ext-il-hmo",
+    "valueCodeableConcept": {
+      "coding": [
+        {
+          "code": "101",
+          "system": "http://fhir.health.gov.il/cs/paying-entity-moh"
+        }
+      ],
+      "text": "HMO Name"
+    }
+  },
+  "expr-file": "auto-value002.fume"
+}

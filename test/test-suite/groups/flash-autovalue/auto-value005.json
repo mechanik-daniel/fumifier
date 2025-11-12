@@ -1,0 +1,14 @@
+{
+  "description": "Extension with automatic URL injection inside a Patient resource",
+  "data": null,
+  "result": {
+    "resourceType": "Patient",
+    "extension": [
+      {
+        "url": "http://test.fumifier.fume.health/fhir/StructureDefinition/SimpleLiberalExtension",
+        "valueString": "42"
+      }
+    ]
+  },
+  "expr-file": "auto-value005.fume"
+}

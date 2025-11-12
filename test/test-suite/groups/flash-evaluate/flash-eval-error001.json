@@ -1,0 +1,7 @@
+{
+  "description": "Instance of Basic with both invalid string id rule and missing required element",
+  "data": null,
+  "bindings": {},
+  "code": "F5110",
+  "expr-file": "flash-eval-error001.fume"
+}

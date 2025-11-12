@@ -1,0 +1,173 @@
+[
+  {
+    "skip": false,
+    "description": "Element ordering: bp profile with auto-injected category and component elements - keys should be in FHIR order",
+    "data": null,
+    "result": [
+      "resourceType",
+      "meta",
+      "status",
+      "category",
+      "code",
+      "subject",
+      "effectiveDateTime",
+      "component"
+    ],
+    "expr-file": "element-ordering-comprehensive.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Extension with auto-injected url - url should come before value",
+    "data": null,
+    "result": "{\"url\":\"http://fhir.health.gov.il/StructureDefinition/ext-il-hmo\",\"valueCodeableConcept\":{\"coding\":[{\"system\":\"http://fhir.health.gov.il/cs/paying-entity-moh\",\"code\":\"103\"}],\"text\":\"HMO Name\"}}",
+    "expr-file": "element-ordering-comprehensive-2.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Patient with auto-injected extension - extension should come before active despite being assigned after",
+    "data": null,
+    "result": [
+      "resourceType",
+      "extension",
+      "active"
+    ],
+    "expr-file": "element-ordering-comprehensive-3.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Profile with auto-injected slice values - all elements should be in FHIR order",
+    "data": null,
+    "result": [
+      "resourceType",
+      "meta",
+      "status",
+      "code"
+    ],
+    "expr-file": "element-ordering-comprehensive-4.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: bp profile with id - id should come after resourceType but before meta",
+    "data": null,
+    "result": [
+      "resourceType",
+      "id",
+      "meta",
+      "status",
+      "category",
+      "code",
+      "subject",
+      "effectiveDateTime",
+      "component"
+    ],
+    "expr-file": "element-ordering-comprehensive-5.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Simple Reference type - no auto-values, but order should still be correct (reference before display)",
+    "data": null,
+    "result": [
+      "reference",
+      "display"
+    ],
+    "expr-file": "element-ordering-comprehensive-6.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Base Extension type - url should come before valueString",
+    "data": null,
+    "result": [
+      "url",
+      "valueString"
+    ],
+    "expr-file": "element-ordering-comprehensive-7.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: CodeableConcept - coding should come before text",
+    "data": null,
+    "result": [
+      "coding",
+      "text"
+    ],
+    "expr-file": "element-ordering-comprehensive-8.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Nested extension object - url should come before valueCodeableConcept despite value being assigned first",
+    "data": null,
+    "result": [
+      "url",
+      "valueCodeableConcept"
+    ],
+    "expr-file": "element-ordering-comprehensive-9.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Nested Reference object - reference should come before display",
+    "data": null,
+    "result": [
+      "reference",
+      "display"
+    ],
+    "expr-file": "element-ordering-comprehensive-10.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Nested CodeableConcept with auto-injected coding - coding should come before text",
+    "data": null,
+    "result": [
+      "coding",
+      "text"
+    ],
+    "expr-file": "element-ordering-comprehensive-11.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Deeply nested CodeableConcept in auto-injected component - coding should come before text",
+    "data": null,
+    "result": [
+      "coding",
+      "text"
+    ],
+    "expr-file": "element-ordering-comprehensive-12.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Very deep nesting - Coding object with auto-injected system and code should be in FHIR order",
+    "data": null,
+    "result": [
+      "system",
+      "code"
+    ],
+    "expr-file": "element-ordering-comprehensive-13.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: CodeableConcept with sliced coding - coding should come before text",
+    "data": null,
+    "result": [
+      "coding",
+      "text"
+    ],
+    "expr-file": "element-ordering-comprehensive-14.fume"
+  },
+  {
+    "skip": false,
+    "description": "Element ordering: Nested Coding with auto-injected values from slice - should be in FHIR order (system, code, display)",
+    "data": null,
+    "result": [
+      "system",
+      "code",
+      "display"
+    ],
+    "expr-file": "element-ordering-comprehensive-15.fume"
+  },
+  {
+    "description": "Element ordering: strinct string comparison of Bundle with link and auto-injected fullUrl",
+    "data": null,
+    "bindings": {},
+    "result": "{\"resourceType\":\"Bundle\",\"type\":\"transaction\",\"_type\":{\"id\":\"bundle-type-id\"},\"entry\":[{\"link\":[{\"relation\":\"self\",\"url\":\"http://example.com/123\"}],\"fullUrl\":\"urn:uuid:bdc1be8b-8eaf-5b99-8db8-04deff133a69\",\"resource\":{\"resourceType\":\"Patient\",\"id\":\"example-patient\",\"gender\":\"male\"}}]}",
+    "expr-file": "element-ordering-comprehensive-16.fume"
+  }
+]

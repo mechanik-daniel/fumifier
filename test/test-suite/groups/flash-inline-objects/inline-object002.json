@@ -1,0 +1,17 @@
+{
+  "description": "Inline object with array property assignment",
+  "data": null,
+  "result": {
+    "resourceType": "Patient",
+    "name": [
+      {
+        "family": "Smith",
+        "given": [
+          "John",
+          "William"
+        ]
+      }
+    ]
+  },
+  "expr-file": "inline-object002.fume"
+}

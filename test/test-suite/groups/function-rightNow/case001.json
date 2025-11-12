@@ -1,0 +1,6 @@
+{
+    "expr": "$type($rightNow() - $millis())",
+    "data": null,
+    "bindings": {},
+    "result": "number"
+}

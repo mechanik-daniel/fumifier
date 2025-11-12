@@ -1,0 +1,43 @@
+[
+  {
+    "skip": false,
+    "description": "Auto-generate code with inherited constraint satisfied (should still FAIL on slice display)",
+    "data": null,
+    "code": "F5130",
+    "notes": "Should fail: code.text satisfied but MandatorySlice.display still missing",
+    "expr-file": "inherited-constraints-validation.fume"
+  },
+  {
+    "skip": false,
+    "description": "Blood pressure with incomplete SystolicBP slice - missing mandatory unit",
+    "data": null,
+    "code": "F5130",
+    "notes": "Should fail: SystolicBP slice has value but missing mandatory unit element",
+    "expr-file": "inherited-constraints-validation-bp.fume"
+  },
+  {
+    "skip": false,
+    "description": "Complete profile with all constraints satisfied - should PASS",
+    "data": null,
+    "result": {
+      "resourceType": "Observation",
+      "meta": {
+        "profile": [
+          "http://test.fumifier.fume.health/fhir/StructureDefinition/TestInheritedConstraints"
+        ]
+      },
+      "status": "unknown",
+      "code": {
+        "text": "Required text",
+        "coding": [
+          {
+            "system": "http://example.com/mandatory",
+            "code": "MANDATORY",
+            "display": "Required display"
+          }
+        ]
+      }
+    },
+    "expr-file": "inherited-constraints-validation-2.fume"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "skip": false,
+  "description": "Instance of resource with valid id but required element null (Binary.contentType)",
+  "data": {},
+  "bindings": {},
+  "code": "F5130",
+  "expr-file": "flash-eval-error006.fume"
+}

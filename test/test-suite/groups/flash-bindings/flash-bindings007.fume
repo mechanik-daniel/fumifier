@@ -1,0 +1,5 @@
+InstanceOf: Patient
+* maritalStatus.coding
+  * system = 'http://example.org/marital-status'
+  * code = 'XYZ'
+* gender = 'female'

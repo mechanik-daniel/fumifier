@@ -1,0 +1,50 @@
+{
+  "skip": false,
+  "data": {
+    "status": "active",
+    "first_name": "Jessica",
+    "last_name": "Rabbit",
+    "birth_date": "1988-06-22",
+    "primary_doctor": {
+      "full_name": "Dr. Dolittle",
+      "license": "1-820958"
+    }
+  },
+  "bindings": {},
+  "result": {
+    "resourceType": "Patient",
+    "id": "abc",
+    "active": true,
+    "name": [
+      {
+        "given": [
+          "Jessica"
+        ],
+        "family": "Rabbit",
+        "period": {
+          "start": "2000-01-01"
+        }
+      }
+    ],
+    "birthDate": "1988-06-22",
+    "generalPractitioner": [
+      {
+        "identifier": {
+          "assigner": {
+            "identifier": {
+              "assigner": {
+                "identifier": {
+                  "assigner": {
+                    "reference": "Organization/123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "display": "Dr. Dolittle"
+      }
+    ]
+  },
+  "expr-file": "flash-eval006.fume"
+}

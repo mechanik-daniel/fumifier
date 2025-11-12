@@ -1,0 +1,16 @@
+{
+  "description": "Multiple variable declarations used in different rules with proper indentation",
+  "data": null,
+  "result": {
+    "resourceType": "Patient",
+    "name": [
+      {
+        "given": [
+          "John"
+        ],
+        "family": "Doe"
+      }
+    ]
+  },
+  "expr-file": "variables002.fume"
+}

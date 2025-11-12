@@ -1,0 +1,6 @@
+InstanceOf: Bundle
+* type = $
+* entry.resource = {
+    "resourceType": "Patient",
+    "id": "example-patient"
+  }

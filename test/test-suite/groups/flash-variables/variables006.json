@@ -1,0 +1,16 @@
+{
+  "description": "Variable with conditional expression and boolean default value",
+  "data": {
+    "active": false
+  },
+  "result": {
+    "resourceType": "Patient",
+    "active": true,
+    "name": [
+      {
+        "text": "Inactive Patient"
+      }
+    ]
+  },
+  "expr-file": "variables006.fume"
+}

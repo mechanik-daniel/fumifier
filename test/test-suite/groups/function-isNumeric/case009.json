@@ -1,0 +1,8 @@
+{
+    "expr": "$isNumeric([$])",
+    "data": null,
+    "bindings": {
+        "no-blah": "'blah' is undefined"
+    },
+    "result": false
+}

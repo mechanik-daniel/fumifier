@@ -1,0 +1,13 @@
+InstanceOf: Bundle
+* type = "transaction-response"
+* entry.response
+  * status = $
+  * outcome = {
+    "resourceType": "OperationOutcome",
+    "issue": [
+      {
+        "severity": "error",
+        "code": "invalid"
+      }
+    ]
+  }
