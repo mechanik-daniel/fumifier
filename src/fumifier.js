@@ -1977,11 +1977,12 @@ var fumifier = (function() {
     frame.bind('warn', defineFunction(function(message) {
       const msg = fn.string(message);
       const env = this.environment;
-      const entry = { code: 'F5320', message: msg };
+      const execId = env.executionId || 'unknown';
+      const entry = { code: 'F5320', message: msg, executionId: execId };
       const act = decide(entry.code, env);
       if (act.shouldLog) {
         const logger = env.lookup(SYM.logger) || createDefaultLogger();
-        logger.warn(msg);
+        logger.warn(`[${execId}] ${msg}`);
       }
       push(env, entry);
       return undefined;
@@ -1991,11 +1992,12 @@ var fumifier = (function() {
     frame.bind('info', defineFunction(function(message) {
       const msg = fn.string(message);
       const env = this.environment;
-      const entry = { code: 'F5500', message: msg };
+      const execId = env.executionId || 'unknown';
+      const entry = { code: 'F5500', message: msg, executionId: execId };
       const act = decide(entry.code, env);
       if (act.shouldLog) {
         const logger = env.lookup(SYM.logger) || createDefaultLogger();
-        logger.info(msg);
+        logger.info(`[${execId}] ${msg}`);
       }
       push(env, entry);
       return undefined;
@@ -2007,12 +2009,13 @@ var fumifier = (function() {
       const val = value;
       const lbl = fn.string(label);
       const proj = (typeof projection === 'undefined') ? val : projection;
+      const execId = env.executionId || 'unknown';
       const msg = `${lbl}: ${fn.string(proj)}`;
-      const entry = { code: 'F5600', message: msg, label: lbl, value: val };
+      const entry = { code: 'F5600', message: msg, label: lbl, value: val, executionId: execId };
       const act = decide(entry.code, env);
       if (act.shouldLog) {
         const logger = env.lookup(SYM.logger) || createDefaultLogger();
-        logger.debug(msg);
+        logger.debug(`[${execId}] ${msg}`);
       }
       push(env, entry);
       return val;
@@ -2079,13 +2082,15 @@ var fumifier = (function() {
     // Global logger for this compiled expression (not exposed to expressions)
     environment.bind(SYM.logger, createDefaultLogger());
 
-    var timestamp = new Date(); // will be overridden on each call to evalute()
+    var timestamp = new Date(); // will be overridden on each call to evaluate()
+    var executionId = utils.generateUuid(); // will be overridden on each call to evaluate()
     environment.bind('now', defineFunction(function(picture, timezone) {
       return datetime.fromMillis(timestamp.getTime(), picture, timezone);
     }, '<s?s?:s>'));
     environment.bind('millis', defineFunction(function() {
       return timestamp.getTime();
     }, '<:n>'));
+    environment.bind('executionId', executionId);
 
     // bind a GETTER for compiled FHIR regexes
     environment.bind(Symbol.for('fumifier.__compiledFhirRegex_GET'), function(regexStr) {
@@ -2144,10 +2149,13 @@ var fumifier = (function() {
           // put the input document into the environment as the root object
           exec_env.bind('$', input);
 
-          // capture the timestamp and put it in the execution environment
-          // the $now() and $millis() functions will return this value - whenever it is called
+          // capture the timestamp and executionId for this execution
+          // the $now() and $millis() functions will return these values, $executionId is available as a variable
           timestamp = new Date();
+          executionId = utils.generateUuid();
           exec_env.timestamp = timestamp; // ensure date/time utils can access a fixed reference time
+          exec_env.executionId = executionId; // ensure tracing can access the execution ID
+          exec_env.bind('executionId', executionId);
 
           // Ensure array focus is wrapped as a singleton sequence
           if(Array.isArray(input) && !isSequence(input)) {
@@ -2165,6 +2173,10 @@ var fumifier = (function() {
         } catch (err) {
           // insert error message into structure
           populateMessage(err); // possible side-effects on `err`
+          // Add executionId to error for traceability
+          if (exec_env && exec_env.executionId) {
+            err.executionId = exec_env.executionId;
+          }
           try {
             const bag = exec_env && typeof exec_env.lookup === 'function' ? exec_env.lookup(SYM.diagnostics) : null;
             if (bag) err.flashDiagnostics = bag;
@@ -2192,7 +2204,10 @@ var fumifier = (function() {
         exec_env.bind('$', input);
 
         timestamp = new Date();
+        executionId = utils.generateUuid();
         exec_env.timestamp = timestamp;
+        exec_env.executionId = executionId;
+        exec_env.bind('executionId', executionId);
         if(Array.isArray(input) && !isSequence(input)) {
           input = createSequence(input);
           input.outerWrapper = true;
@@ -2204,6 +2219,10 @@ var fumifier = (function() {
         } catch (err) {
           // In verbose mode: never throw for any defined error (F/S/T/D). Only throw if completely unrecognized shape.
           populateMessage(err);
+          // Add executionId to error for traceability
+          if (exec_env && exec_env.executionId) {
+            err.executionId = exec_env.executionId;
+          }
           // Use diagnostics push() with the original error (message populated); push() will sanitize
           push(exec_env, err);
         }
@@ -2225,7 +2244,7 @@ var fumifier = (function() {
           return 206;
         })();
 
-        return { ok: status === 200, status, result, diagnostics: bag };
+        return { ok: status === 200, status, result, diagnostics: bag, executionId: exec_env.executionId };
       },
       assign: function (name, value) {
         environment.bind(name, value);
