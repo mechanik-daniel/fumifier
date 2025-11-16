@@ -174,28 +174,36 @@ describe('AST Mobility Feature', function() {
     const originalAst = originalExpr.ast();
     const originalErrors = originalExpr.errors();
 
-    const recreatedExpr = await fumifier(originalAst, { recover: true });
+    // For AST mobility with errors, we need to create an AST that includes the errors
+    const astWithErrors = { ...originalAst };
+    if (originalErrors && originalErrors.length > 0) {
+      astWithErrors.errors = originalErrors;
+    }
+
+    const recreatedExpr = await fumifier(astWithErrors, { recover: true });
+    const recreatedErrors = recreatedExpr.errors();
 
     // Should have same AST structure (with embedded error nodes)
     assert.deepEqual(recreatedExpr.ast(), originalAst);
 
-    // The original should have had errors
+    // Both should have had errors
     assert.ok(originalErrors && originalErrors.length > 0);
+    assert.ok(recreatedErrors && recreatedErrors.length > 0);
 
     // The AST should contain error nodes
     assert.equal(originalAst.rhs.type, 'error');
     assert.equal(originalAst.rhs.code, 'S0211');
 
-    // The original expression should fail evaluation (has syntax errors)
+    // Both expressions should fail evaluation consistently (syntax errors)
     await assert.rejects(
       async () => await originalExpr.evaluate({}),
       (err) => err.code === 'S0500'
     );
 
-    // The recreated expression can be evaluated (error nodes become undefined)
-    // This is the current behavior: error nodes in AST are treated as undefined values
-    const recreatedResult = await recreatedExpr.evaluate({});
-    assert.equal(recreatedResult, undefined); // 1 + undefined = undefined
+    await assert.rejects(
+      async () => await recreatedExpr.evaluate({}),
+      (err) => err.code === 'S0500'
+    );
   });
 
   it('should throw error for invalid AST', async function() {
