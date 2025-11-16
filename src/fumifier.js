@@ -2043,6 +2043,9 @@ var fumifier = (function() {
         if (ast.errors) {
           errors = ast.errors;
           delete ast.errors;
+        } else {
+          // Initialize errors array for strings without parsing errors
+          errors = [];
         }
       } else if (typeof expr === 'object' && expr !== null) {
         // Assume it's a pre-parsed AST object that's already fully processed
