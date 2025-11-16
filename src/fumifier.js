@@ -2055,6 +2055,9 @@ var fumifier = (function() {
         if (ast.errors && Array.isArray(ast.errors)) {
           errors = [...ast.errors];
           delete ast.errors;
+        } else {
+          // Initialize errors array for AST objects without errors
+          errors = [];
         }
       } else {
         throw new Error('Expression must be either a string or an AST object');
@@ -2143,7 +2146,7 @@ var fumifier = (function() {
         var exec_env;
         try {
           // throw if the expression compiled with syntax errors
-          if(typeof errors !== 'undefined') {
+          if(typeof errors !== 'undefined' && errors.length > 0) {
             var err = {
               code: 'S0500',
               position: 0
