@@ -10,14 +10,15 @@ jobs:
     steps:
       - name: Send downstream notification
         run: |
-          echo "Sending webhook to: ${{ secrets.DOWNSTREAM_WEBHOOK_URL }}"
+          echo "Sending repository dispatch to: ${{ secrets.DOWNSTREAM_WEBHOOK_URL }}"
           
-          response=$(curl -w "%{http_code}" -s -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.DOWNSTREAM_TOKEN }}" \
+          # Capture both response body and HTTP status code
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.DOWNSTREAM_TOKEN }}" \
             -H "Content-Type: application/json" \
             "${{ secrets.DOWNSTREAM_WEBHOOK_URL }}" \
-            -d @- <<EOF
+            -d @- <<'EOF'
           {
             "event_type": "source-updated",
             "client_payload": {
@@ -29,15 +30,23 @@ jobs:
           EOF
           )
           
-          http_code="${response: -3}"
-          response_body="${response%???}"
+          # Extract HTTP status code (last line) and response body (everything else)
+          http_code=$(echo "$response" | tail -n 1)
+          response_body=$(echo "$response" | head -n -1)
           
           echo "HTTP Status: $http_code"
-          echo "Response: $response_body"
-          
-          if [ "$http_code" != "204" ]; then
-            echo "Webhook failed with status $http_code"
-            exit 1
+          if [ -n "$response_body" ]; then
+            echo "Response Body: $response_body"
           fi
           
-          echo "Webhook sent successfully"
+          # Repository dispatch returns 204 No Content on success
+          if [ "$http_code" = "204" ]; then
+            echo "✓ Repository dispatch sent successfully"
+          else
+            echo "✗ Repository dispatch failed with status $http_code"
+            echo "This could indicate:"
+            echo "  - Invalid token or insufficient permissions"
+            echo "  - Incorrect repository URL"
+            echo "  - Target repository doesn't exist or isn't accessible"
+            exit 1
+          fi
