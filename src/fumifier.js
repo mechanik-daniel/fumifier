@@ -2244,7 +2244,7 @@ var fumifier = (function() {
           return 206;
         })();
 
-        return { ok: status === 200, status, result, diagnostics: bag };
+        return { ok: status === 200, status, result, diagnostics: bag, executionId: exec_env.executionId };
       },
       assign: function (name, value) {
         environment.bind(name, value);
