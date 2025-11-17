@@ -149,7 +149,7 @@ See `PolicyThresholds.md` for deeper guidance.
 ---
 ## 9. API Reference
 ### `await fumifier(expressionText, options)`
-### `await fumifier(astObject, options)` ⭐ **New in v0.12.0**
+### `await fumifier(astObject, options)` ⭐ **New in v1.0.0**
 Returns a compiled expression object.
 
 The fumifier function now accepts either:
