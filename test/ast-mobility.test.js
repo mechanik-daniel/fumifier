@@ -174,13 +174,8 @@ describe('AST Mobility Feature', function() {
     const originalAst = originalExpr.ast();
     const originalErrors = originalExpr.errors();
 
-    // For AST mobility with errors, we need to create an AST that includes the errors
-    const astWithErrors = { ...originalAst };
-    if (originalErrors && originalErrors.length > 0) {
-      astWithErrors.errors = originalErrors;
-    }
-
-    const recreatedExpr = await fumifier(astWithErrors, { recover: true });
+    // With AST mobility, errors now stay in the AST automatically
+    const recreatedExpr = await fumifier(originalAst, { recover: true });
     const recreatedErrors = recreatedExpr.errors();
 
     // Should have same AST structure (with embedded error nodes)
