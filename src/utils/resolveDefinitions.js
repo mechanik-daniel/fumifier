@@ -74,7 +74,14 @@ function handleRecoverableError(base, positions, recover, errors, errObj) {
  * @param {boolean} recover - If true, will continue processing and collect errors instead of throwing them.
  * @param {Array} errors - Array to collect errors if recover is true
  * @param {Object} compiledRegexCache - Cache for compiled FHIR regexes
- * @returns {Promise<Object>} Semantically enriched AST
+ * @returns {Promise<Object>} Semantically enriched AST with resolved FHIR definitions:
+ *   - resolvedTypeMeta: FHIR type metadata cache
+ *   - resolvedBaseTypeMeta: FHIR base type metadata cache
+ *   - resolvedTypeChildren: FHIR type children cache
+ *   - resolvedElementDefinitions: FHIR element definitions cache
+ *   - resolvedElementChildren: FHIR element children cache
+ *   - resolvedValueSetExpansions: ValueSet expansion cache
+ *   - normalizedRootPackages: Array of normalized root package contexts from FPE (for AST mobility)
  */
 const resolveDefinitions = async function (expr, navigator, recover, errors, compiledRegexCache) {
   if (!expr || !expr.containsFlash) return expr;
