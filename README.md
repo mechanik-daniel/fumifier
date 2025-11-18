@@ -39,7 +39,7 @@ Fumifier compiles a FLASH expression string to an executable object, then evalua
 ---
 ## 2. Feature Highlights
 - Modern ES Module implementation (Node ≥ 20)
-- **AST Mobility** ⭐ **New in v0.12.0** – serialize/deserialize compiled expressions as JSON
+- **AST Mobility** ⭐ **New in v1.0.0** – serialize/deserialize compiled expressions as JSON
 - Async evaluation pipeline with selective short‑circuiting
 - FLASH blocks & rules lowered into native evaluator stages
 - Tuple streams & ancestry tracking for context‑rich transformations
@@ -149,7 +149,7 @@ See `PolicyThresholds.md` for deeper guidance.
 ---
 ## 9. API Reference
 ### `await fumifier(expressionText, options)`
-### `await fumifier(astObject, options)` ⭐ **New in v0.12.0**
+### `await fumifier(astObject, options)` ⭐ **New in v1.0.0**
 Returns a compiled expression object.
 
 The fumifier function now accepts either:
@@ -170,7 +170,7 @@ Compiled object methods:
 - `ast()` – returns internal AST
 - `errors()` – returns compilation errors (if any)
 
-### AST Mobility ⭐ **New in v0.12.0**
+### AST Mobility ⭐ **New in v1.0.0**
 Fumifier now supports "AST mobility" - the ability to serialize and recreate compiled expressions:
 
 ```js
