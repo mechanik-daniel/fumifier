@@ -425,6 +425,17 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
     }));
   }
 
+  // Extract normalized root package context for AST mobility with FHIR context
+  try {
+    const fpe = navigator.getFpe();
+    if (fpe && typeof fpe.getNormalizedRootPackages === 'function') {
+      expr.normalizedRootPackages = await fpe.getNormalizedRootPackages();
+    }
+  } catch (e) {
+    // If extraction fails, we don't want to break the entire resolution process
+    // This is for AST mobility support, not core functionality
+  }
+
   expr.resolvedTypeMeta = resolvedTypeMeta;
   expr.resolvedBaseTypeMeta = resolvedBaseTypeMeta;
   expr.resolvedTypeChildren = resolvedTypeChildren;
