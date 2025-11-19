@@ -8,6 +8,12 @@ License: See the LICENSE file included with this package for the terms that appl
 import { VERSION } from '../version.js';
 
 /**
+ * @typedef CacheInterface
+ * @property {(key: string) => Promise<any>} get - Retrieve a value from the cache
+ * @property {(key: string, value: any) => Promise<void>} set - Store a value in the cache
+ */
+
+/**
  * Creates an expression identity object for cache keys
  * @param {string} source - The raw source string of the expression
  * @param {object} navigator - Optional FHIR structure navigator
