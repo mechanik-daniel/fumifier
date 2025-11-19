@@ -2163,7 +2163,7 @@ var fumifier = (function() {
               throw err;
             } else {
               // All errors are F0xxx warnings, log a warning with specific details and continue evaluation
-              const logger = exec_env?.lookup(SYM.logger) || environment.lookup(SYM.logger) || createDefaultLogger();
+              const logger = environment.lookup(SYM.logger) || createDefaultLogger();
               const warningDetails = ast.errors.map(error => `${error.code}: ${error.message}`).join('; ');
               logger.warn(`Evaluating expression with FHIR-related parse warnings: ${warningDetails}. This may cause unpredictable side effects.`);
             }
