@@ -81,8 +81,9 @@ const parser = (() => {
     var base_symbol = {
       nud: function () {
         // error - symbol has been invoked as a unary operator
+        // Use more specific F1103 error for semicolons
         var err = {
-          code: 'S0211',
+          code: this.value === ';' ? 'F1103' : 'S0211',
           token: this.value,
           position: this.position,
           start: this.start,
