@@ -19,11 +19,12 @@ TODO: This is a first draft of README.md and needs some adjustments/improvents/c
 11. TypeScript Support
 12. CLI / REPL (future)
 13. Performance Notes
-14. Roadmap
-15. Contributing
-16. Versioning & Release Process
-17. License & Attribution
-18. Acknowledgements
+14. Cached Parsing
+15. Roadmap
+16. Contributing
+17. Versioning & Release Process
+18. License & Attribution
+19. Acknowledgements
 
 ---
 ## 1. What is Fumifier?
@@ -236,7 +237,35 @@ Planned: `npx fumifier --expr file.fume --in input.json` for quick invocations &
 - Parallelizable map phases flagged internally to reduce await churn (best effort)
 
 ---
-## 14. Roadmap
+## 14. Cached Parsing ⭐ **New**
+Fumifier now supports caching of parsed expressions to improve performance when the same expressions are used repeatedly:
+
+```javascript
+import fumifier from 'fumifier';
+
+// Uses default shared LRU cache (128MB limit)
+const compiled = await fumifier('Patient.name.given');
+
+// Provide custom cache implementation
+const myCache = {
+  async get(key) { /* your get logic */ },
+  async set(key, value) { /* your set logic */ }
+};
+const compiled2 = await fumifier('Patient.name.given', { cache: myCache });
+
+// Cache keys include expression text, FHIR context, and fumifier version
+// Concurrent requests for the same expression are deduplicated automatically
+```
+
+**Key Features:**
+- **Default LRU Cache**: Shared across all fumifier instances with memory-based eviction
+- **External Cache Support**: Implement `{ get, set }` interface for Redis, database, etc.
+- **Smart Cache Keys**: Based on expression text, FHIR context, and fumifier version
+- **Concurrent Deduplication**: Multiple requests for the same unparsed expression share results
+- **$eval Inheritance**: Expressions evaluated via `$eval()` inherit the parent's cache
+
+---
+## 15. Roadmap
 Tracking in `TODO.md`. Near‑term priorities:
 - Date / DateTime canonicalization & strict validation
 - Fixed value / pattern injection
@@ -246,7 +275,7 @@ Tracking in `TODO.md`. Near‑term priorities:
 - Expanded verbose diagnostics normalization
 
 ---
-## 15. Contributing
+## 16. Contributing
 1. Fork & clone
 2. `npm install`
 3. `npm test` (runs lint + install FSH test package + coverage)
