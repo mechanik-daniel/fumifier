@@ -248,19 +248,20 @@ const compiled = await fumifier('Patient.name.given');
 
 // Provide custom cache implementation
 const myCache = {
-  async get(key) { /* your get logic */ },
-  async set(key, value) { /* your set logic */ }
+  // identity is an object: { source, version, rootPackages? }
+  async get(identity) { /* your get logic */ },
+  async set(identity, value) { /* your set logic */ }
 };
 const compiled2 = await fumifier('Patient.name.given', { cache: myCache });
 
-// Cache keys include expression text, FHIR context, and fumifier version
+// Cache identities include expression text, FHIR context, and fumifier version
 // Concurrent requests for the same expression are deduplicated automatically
 ```
 
 **Key Features:**
 - **Default LRU Cache**: Shared across all fumifier instances with memory-based eviction
 - **External Cache Support**: Implement `{ get, set }` interface for Redis, database, etc.
-- **Smart Cache Keys**: Based on expression text, FHIR context, and fumifier version
+- **Smart Cache Identities**: Based on expression text, FHIR context, and fumifier version
 - **Concurrent Deduplication**: Multiple requests for the same unparsed expression share results
 - **$eval Inheritance**: Expressions evaluated via `$eval()` inherit the parent's cache
 

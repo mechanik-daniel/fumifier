@@ -9,8 +9,8 @@ import { VERSION } from '../version.js';
 
 /**
  * @typedef CacheInterface
- * @property {(key: string) => Promise<any>} get - Retrieve a value from the cache
- * @property {(key: string, value: any) => Promise<void>} set - Store a value in the cache
+ * @property {(identity: Object) => Promise<any>} get - Retrieve a value from the cache using identity object
+ * @property {(identity: Object, value: any) => Promise<void>} set - Store a value in the cache using identity object
  */
 
 /**
