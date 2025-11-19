@@ -8,9 +8,9 @@ License: See the LICENSE file included with this package for the terms that appl
 import { VERSION } from '../version.js';
 
 /**
- * @typedef CacheInterface
- * @property {(identity: Object) => Promise<any>} get - Retrieve a value from the cache using identity object
- * @property {(identity: Object, value: any) => Promise<void>} set - Store a value in the cache using identity object
+ * @typedef AstCacheInterface
+ * @property {(identity: Object) => Promise<any>} get - Retrieve a value from the AST cache using identity object { source, version, recover, rootPackages? }
+ * @property {(identity: Object, value: any) => Promise<void>} set - Store a value in the AST cache using identity object { source, version, recover, rootPackages? }
  */
 
 /**
@@ -40,16 +40,16 @@ export function createExpressionIdentity(source, navigator) {
 }
 
 /**
- * Cache interface that wraps different cache implementations
+ * AST cache interface that wraps different AST cache implementations
  */
-export class CacheInterface {
+export class AstCacheInterface {
   /**
-   * Create a cache interface
-   * @param {object} implementation - The cache implementation with get/set methods
+   * Create an AST cache interface
+   * @param {object} implementation - The AST cache implementation with get/set methods
    */
   constructor(implementation) {
     this.impl = implementation;
-    // Each cache instance has its own inflight tracking
+    // Each AST cache instance has its own inflight tracking
     this.inflightPromises = new Map();
   }
 
@@ -69,7 +69,7 @@ export class CacheInterface {
    * Set a cached AST by expression identity
    * @param {object} identity - Expression identity object
    * @param {object} ast - The AST to cache
-   * @returns {Promise<void>} Promise that resolves when the cache is set
+   * @returns {Promise<void>} Promise that resolves when the AST cache is set
    */
   async set(identity, ast) {
     if (!this.impl || typeof this.impl.set !== 'function') {
@@ -80,7 +80,7 @@ export class CacheInterface {
 
   /**
    * Create or get an inflight promise for parsing with deduplication
-   * @param {string} key - The cache key for the expression
+   * @param {string} key - The AST cache key for the expression
    * @param {Function} parseFunction - Function that returns a promise for parsing
    * @returns {Promise<any>} Promise that resolves to the parsed AST
    */
@@ -103,7 +103,7 @@ export class CacheInterface {
   }
 
   /**
-   * Get inflight statistics for this cache instance
+   * Get inflight statistics for this AST cache instance
    * @returns {object} Inflight statistics
    */
   getInflightStats() {

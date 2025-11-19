@@ -23,7 +23,7 @@ import fn from './utils/functions.js';
 import utils from './utils/utils.js';
 import parser from './parser.js';
 import resolveDefinitions from './utils/resolveDefinitions.js';
-import { createExpressionIdentity, CacheInterface } from './utils/cacheUtils.js';
+import { createExpressionIdentity, AstCacheInterface } from './utils/cacheUtils.js';
 import { getDefaultCache } from './utils/moduleCache.js';
 
 // Import boolize directly since it's a simple utility function
@@ -41,16 +41,16 @@ import { createDefaultLogger, SYM, decide, push, thresholds, severityFromCode, L
  */
 
 /**
- * @typedef CacheInterface
- * @property {(identity: Object) => Promise<any>} get - Retrieve a value from the cache using identity object
- * @property {(identity: Object, value: any) => Promise<void>} set - Store a value in the cache using identity object
+ * @typedef AstCacheInterface
+ * @property {(identity: Object) => Promise<any>} get - Retrieve a value from the AST cache using identity object { source, version, recover, rootPackages? }
+ * @property {(identity: Object, value: any) => Promise<void>} set - Store a value in the AST cache using identity object { source, version, recover, rootPackages? }
  */
 
 /**
  * @typedef FumifierOptions
  * @property {boolean} [recover] Attempt to recover on parse error.
  * @property {FhirStructureNavigator} [navigator] FHIR structure navigator used to resolve FLASH constructs.
- * @property {CacheInterface} [cache] Optional cache implementation for parsed expressions. Defaults to shared LRU cache.
+ * @property {AstCacheInterface} [astCache] Optional AST cache implementation for parsed expressions. Defaults to shared LRU cache.
  */
 
 /**
@@ -1921,21 +1921,21 @@ var fumifier = (function() {
       // Create expression identity for caching
       const identity = createExpressionIdentity(expr, navigator);
 
-      // Use the same cache implementation as the parent fumifier instance
-      const cacheImpl = env && env.lookup(Symbol.for('fumifier.__cacheImpl')) || new CacheInterface(getDefaultCache());
+      // Use the same AST cache implementation as the parent fumifier instance
+      const astCacheImpl = env && env.lookup(Symbol.for('fumifier.__astCacheImpl')) || new AstCacheInterface(getDefaultCache());
 
-      // Try to get from cache first
+      // Try to get from AST cache first
       try {
-        ast = await cacheImpl.get(identity);
+        ast = await astCacheImpl.get(identity);
       } catch (cacheError) {
-        // If cache fails, proceed without caching
+        // If AST cache fails, proceed without caching
         ast = null;
       }
 
       if (!ast) {
-        // Cache miss - parse with inflight deduplication
+        // AST cache miss - parse with inflight deduplication
         const cacheKey = JSON.stringify(identity);
-        ast = await cacheImpl.getOrCreateInflight(cacheKey, async () => {
+        ast = await astCacheImpl.getOrCreateInflight(cacheKey, async () => {
           const parsedAst = parser(expr, false);
 
           // Post-parse FLASH processing for inner $eval expressions
@@ -1953,18 +1953,18 @@ var fumifier = (function() {
 
             // Cache the resolved AST
             try {
-              await cacheImpl.set(identity, resolvedAst);
+              await astCacheImpl.set(identity, resolvedAst);
             } catch (cacheError) {
-              // If cache fails, continue without caching
+              // If AST cache fails, continue without caching
             }
             return resolvedAst;
           }
 
           // Cache the parsed AST for non-FLASH expressions
           try {
-            await cacheImpl.set(identity, parsedAst);
+            await astCacheImpl.set(identity, parsedAst);
           } catch (cacheError) {
-            // If cache fails, continue without caching
+            // If AST cache fails, continue without caching
           }
           return parsedAst;
         });
@@ -2080,26 +2080,26 @@ var fumifier = (function() {
     var recover = options && options.recover;
     var compiledFhirRegex = {};
 
-    // Get cache implementation - use external cache if provided, otherwise use default
-    const cacheImpl = (options && options.cache) ? new CacheInterface(options.cache) : new CacheInterface(getDefaultCache());
+    // Get AST cache implementation - use external AST cache if provided, otherwise use default
+    const astCacheImpl = (options && options.astCache) ? new AstCacheInterface(options.astCache) : new AstCacheInterface(getDefaultCache());
 
     try {
       if (typeof expr === 'string') {
         // Create expression identity for caching
         const identity = createExpressionIdentity(expr, navigator);
 
-        // Try to get from cache first
+        // Try to get from AST cache first
         try {
-          ast = await cacheImpl.get(identity);
+          ast = await astCacheImpl.get(identity);
         } catch (cacheError) {
-          // If cache fails, proceed without caching
+          // If AST cache fails, proceed without caching
           ast = null;
         }
 
         if (!ast) {
-          // Cache miss - parse with inflight deduplication
+          // AST cache miss - parse with inflight deduplication
           const cacheKey = JSON.stringify(identity);
-          ast = await cacheImpl.getOrCreateInflight(cacheKey, async () => {
+          ast = await astCacheImpl.getOrCreateInflight(cacheKey, async () => {
             const parsedAst = parser(expr, recover);
             // Ensure errors array exists in AST
             if (!parsedAst.errors) {
@@ -2117,6 +2117,13 @@ var fumifier = (function() {
                 if (recover) {
                   err.type = 'error';
                   parsedAst.errors.push(err);
+                  // Cache and return the AST with errors in recover mode
+                  try {
+                    await astCacheImpl.set(identity, parsedAst);
+                  } catch (cacheError) {
+                    // If AST cache fails, continue without caching
+                  }
+                  return parsedAst;
                 } else {
                   err.stack = (new Error()).stack;
                   throw err;
@@ -2127,9 +2134,9 @@ var fumifier = (function() {
 
                 // Cache the resolved AST (pure JSON, no functions)
                 try {
-                  await cacheImpl.set(identity, resolvedAst);
+                  await astCacheImpl.set(identity, resolvedAst);
                 } catch (cacheError) {
-                  // If cache fails, continue without caching
+                  // If AST cache fails, continue without caching
                 }
                 return resolvedAst;
               }
@@ -2137,9 +2144,9 @@ var fumifier = (function() {
 
             // Cache the parsed AST for non-FLASH expressions
             try {
-              await cacheImpl.set(identity, parsedAst);
+              await astCacheImpl.set(identity, parsedAst);
             } catch (cacheError) {
-              // If cache fails, continue without caching
+              // If AST cache fails, continue without caching
             }
             return parsedAst;
           });
@@ -2237,10 +2244,10 @@ var fumifier = (function() {
       return compiled;
     });
 
-    // Expose navigator, compiled regex cache, and cache implementation to inner $eval() via environment lookup
+    // Expose navigator, compiled regex cache, and AST cache implementation to inner $eval() via environment lookup
     environment.bind(Symbol.for('fumifier.__navigator'), navigator);
     environment.bind(Symbol.for('fumifier.__compiledFhirRegex_OBJ'), compiledFhirRegex);
-    environment.bind(Symbol.for('fumifier.__cacheImpl'), cacheImpl);
+    environment.bind(Symbol.for('fumifier.__astCacheImpl'), astCacheImpl);
 
     // bind the resolved definition collections
     environment.bind(Symbol.for('fumifier.__resolvedDefinitions'), {
