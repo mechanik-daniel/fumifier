@@ -38,9 +38,11 @@ class MemoryLRUCache {
    */
   _generateKey(identity) {
     // Create a deterministic string key from the identity object
+    // Include ALL identity components to ensure proper cache isolation
     const keyParts = [
       identity.version,
       identity.source,
+      identity.recover ? 'recover' : 'normal',
       identity.rootPackages ? JSON.stringify(identity.rootPackages) : ''
     ];
     return keyParts.join('|');
