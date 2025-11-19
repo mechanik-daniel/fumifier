@@ -141,7 +141,7 @@ describe('Invoke parser with incomplete expression', function() {
         "type": "path",
         "errors": [
           {
-            "code": "S0211",
+            "code": "F1103",
             "token": ";",
             "line":1,"position": 15, start: 14,
             "remaining": [
@@ -179,7 +179,7 @@ describe('Invoke parser with incomplete expression', function() {
             "stages": [
               {
                 "expr": {
-                  "code": "S0211",
+                  "code": "F1103",
                   "token": ";",
                   "line":1,"position": 15, start: 14,
                   "remaining": [
