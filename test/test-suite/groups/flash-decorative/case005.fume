@@ -1,0 +1,3 @@
+InstanceOf: DecorativeFixedValueTest
+* subject.reference = "Patient/123"
+* value = 160

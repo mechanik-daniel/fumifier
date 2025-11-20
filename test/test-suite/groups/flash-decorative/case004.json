@@ -1,0 +1,36 @@
+{
+  "expr": "InstanceOf: DecorativeFixedValueTest\n* subject.reference = \"Patient/123\"\n* code.text = \"Custom Code Text\"",
+  "data": {},
+  "result": {
+    "resourceType": "Observation",
+    "category": [
+      {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+            "code": "vital-signs",
+            "display": "Vital Signs"
+          }
+        ]
+      }
+    ],
+    "code": {
+      "coding": [
+        {
+          "system": "http://loinc.org",
+          "code": "8302-2"
+        }
+      ],
+      "text": "Body height"
+    },
+    "status": "final",
+    "subject": {
+      "reference": "Patient/123"
+    },
+    "meta": {
+      "profile": [
+        "http://test.fumifier.fume.health/fhir/StructureDefinition/DecorativeFixedValueTest"
+      ]
+    }
+  }
+}
