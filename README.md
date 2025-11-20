@@ -69,7 +69,7 @@ Not ideal if you only need simple field renaming (a static template may suffice)
 npm install fumifier
 ```
 
-### Browser Entry Point 🌐 **New in v1.3.0**
+### Browser Entry Point 🌐 **New in v1.4.0**
 
 For browser environments or when you only need parsing capabilities without evaluation:
 
