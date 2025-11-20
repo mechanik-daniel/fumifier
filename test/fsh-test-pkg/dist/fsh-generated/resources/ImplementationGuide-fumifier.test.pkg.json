@@ -43,6 +43,14 @@
       },
       {
         "reference": {
+          "reference": "StructureDefinition/DecorativeFixedValueTest"
+        },
+        "name": "Decorative Fixed Value Test Profile",
+        "description": "Test profile for decorative fixed value injection feature covering Coding.display, CodeableConcept.text, and Quantity.unit",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
           "reference": "StructureDefinition/ExtensionWithPolySlice"
         },
         "name": "ExtensionWithPolySlice",
