@@ -172,10 +172,25 @@ export function validate(expression) {
       errors: errors
     };
   } catch (error) {
-    populateMessage(error);
+    // Handle raw JavaScript errors that don't have FUME error structure
+    let message = error.message || 'Parse error occurred';
+    let code = error.code || 'FATAL';
+
+    const fumeError = {
+      code: code,
+      message: message,
+      position: error.position || 0,
+      start: error.start || 0,
+      line: error.line || 1,
+      token: error.token,
+      value: error.value,
+      type: error.type || 'ParseError'
+    };
+
+    populateMessage(fumeError);
     return {
       isValid: false,
-      errors: [error]
+      errors: [fumeError]
     };
   }
 }
