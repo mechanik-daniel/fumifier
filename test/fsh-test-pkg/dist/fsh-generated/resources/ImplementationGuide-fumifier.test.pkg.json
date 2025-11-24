@@ -51,6 +51,14 @@
       },
       {
         "reference": {
+          "reference": "StructureDefinition/dual-assignment-test-profile"
+        },
+        "name": "Dual Assignment Test Profile",
+        "description": "A test profile for validating dual assignment behavior with sliced identifiers",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
           "reference": "StructureDefinition/ExtensionWithPolySlice"
         },
         "name": "ExtensionWithPolySlice",
