@@ -19,27 +19,15 @@ void async function () {
   var navigator = new FhirStructureNavigator(generator);
 
   var expression = `
-InstanceOf: il-core-patient
+InstanceOf: dual-assignment-test-profile
 * name
   * given = 'John'
   * family = 'Doe'
-* gender = 'male'
-* birthDate = '1980-01-01'
 // should create a single entry in identifier array
 // should include system, value, and use
-// since the il-id slice is max=1
-* identifier[il-id].value = '12345'
-* identifier[il-id].use = 'official'
-// add managing organization using dual assignment
-// should create a single object with both reference and display
-// because managingOrganization is max=1
-* managingOrganization.reference = 'Organization/1'
-* managingOrganization.display = 'Test Organization'
-// this dual assignment into generalPractitioner should result in two entries
-// since generalPractitioner is 0..*
-// one entry with reference, one with display
-* generalPractitioner.reference = 'Practitioner/1'
-* generalPractitioner.display = 'Dr. Smith'
+// since the TestSlice is max=1
+* identifier[TestSlice].value = '12345'
+* identifier[TestSlice].use = 'official'
 
 `
 ;
@@ -69,7 +57,7 @@ InstanceOf: il-core-patient
       {
         // logLevel: 50,
         // validationLevel: 30,
-        throwLevel: 13,
+        // throwLevel: 13,
         // collectLevel: 70
       });
     console.log('Expression evaluated successfully');
