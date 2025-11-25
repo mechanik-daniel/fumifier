@@ -9,6 +9,12 @@
           "http://test.fumifier.fume.health/fhir/StructureDefinition/dual-assignment-test-profile"
         ]
       },
+      "name": [
+        {
+          "family": "Doe",
+          "given": ["John"]
+        }
+      ],
       "identifier": [
         {
           "system": "http://example.org/dual-assignment-test",
