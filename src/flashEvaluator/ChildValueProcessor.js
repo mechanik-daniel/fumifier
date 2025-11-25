@@ -13,8 +13,7 @@ License: See the LICENSE file included with this package for the terms that appl
 import fn from '../utils/functions.js';
 import { createFhirPrimitive } from './FhirPrimitive.js';
 import PrimitiveValidator from './PrimitiveValidator.js';
-import FlashErrorGenerator from './FlashErrorGenerator.js';
-import createPolicy from '../utils/policy.js';
+import validateMandatoryChildren from '../utils/validateMandatoryChildren.js';
 
 // Import utility functions directly since they are simple utilities
 const { initCap } = fn;
@@ -180,7 +179,7 @@ class ChildValueProcessor {
     // if there is __mandatories on the first value, we will keep that list for checking
     const mandatories = values[0]?.value[0]?.[Symbol.for('fumifier.__mandatoryChildren')];
     // now if mandatories exist, we will iterate on each value in each values entry
-    // and check for satisfaction
+    // and check for satisfaction using the shared validation utility
     if (mandatories) {
       for (const { value: valueArray } of values) {
         for (const testedValue of valueArray) {
@@ -189,35 +188,11 @@ class ChildValueProcessor {
             continue;
           }
 
-          // now we will check if all mandatory elements are satisfied
-          for (const mandatory of mandatories) {
-            const isSatisfied = mandatory.kind ?
-              // non-polymorphic
-              mandatory.names.some(mandatoryName =>
-                Object.prototype.hasOwnProperty.call(testedValue, mandatoryName) ||
-                (mandatory.kind === 'primitive-type' && Object.prototype.hasOwnProperty.call(testedValue, `_${mandatoryName}`))
-              ) :
-              // polymorphic
-              mandatory.names.some(mandatoryName =>
-                Object.prototype.hasOwnProperty.call(testedValue, mandatoryName) ||
-                Object.prototype.hasOwnProperty.call(testedValue, `_${mandatoryName}`)
-              );
-            if (!isSatisfied) {
-              const err = FlashErrorGenerator.createFhirContextError("F5130", expr, {
-                fhirParent: (child.__flashPathRefKey).replace('::', '/'),
-                fhirElement: mandatory.__flashPathRefKey.split('::')[1],
-              });
-              const policy = createPolicy(this.environment);
-              if (policy.enforce(err)) {
-                throw err;
-              }
-            }
-          }
+          // Use shared validation utility with custom parent path from child
+          validateMandatoryChildren(testedValue, mandatories, expr, this.environment, child.__flashPathRefKey);
         }
       }
-    }
-
-    return { values };
+    }    return { values };
   }
 
   /**
