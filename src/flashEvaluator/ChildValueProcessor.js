@@ -13,6 +13,8 @@ License: See the LICENSE file included with this package for the terms that appl
 import fn from '../utils/functions.js';
 import { createFhirPrimitive } from './FhirPrimitive.js';
 import PrimitiveValidator from './PrimitiveValidator.js';
+import FlashErrorGenerator from './FlashErrorGenerator.js';
+import createPolicy from '../utils/policy.js';
 
 // Import utility functions directly since they are simple utilities
 const { initCap } = fn;
@@ -117,6 +119,9 @@ class ChildValueProcessor {
         // complex type or primitive type - merge all objects into one
         const mergedValue = fn.merge(valuesForName);
         if (Object.keys(mergedValue).length > 0) {
+          // re-attach mandatory children info
+          const SYM = Symbol.for('fumifier.__mandatoryChildren');
+          mergedValue[SYM] = valuesForName[0][SYM];
           values.push({ name, kind: kindForName, value: [mergedValue] });
         }
       }
@@ -160,6 +165,47 @@ class ChildValueProcessor {
         }
       } catch (error) {
         // If the element failed to auto generate, we ignore the error and just don't add anything to the values array
+      }
+    } else {
+      // we have collected values for this element.
+      // first if there is __mandatories on the first value, we will keep that list for checking
+      const mandatories = values[0]?.value[0]?.[Symbol.for('fumifier.__mandatoryChildren')];
+      // now if mandatories exist, we will iterate on each value in each values entry
+      // and check for satisfaction
+      if (mandatories) {
+        for (const { value: valueArray } of values) {
+          for (const testedValue of valueArray) {
+            // only objects can have mandatory elements
+            if (typeof testedValue !== 'object' || testedValue === null) {
+              continue;
+            }
+
+            // now we will check if all mandatory elements are satisfied
+            for (const mandatory of mandatories) {
+              const isSatisfied = mandatory.kind ?
+                // non-polymorphic
+                mandatory.names.some(mandatoryName =>
+                  Object.prototype.hasOwnProperty.call(testedValue, mandatoryName) ||
+                  (mandatory.kind === 'primitive-type' && Object.prototype.hasOwnProperty.call(testedValue, `_${mandatoryName}`))
+                ) :
+                // polymorphic
+                mandatory.names.some(mandatoryName =>
+                  Object.prototype.hasOwnProperty.call(testedValue, mandatoryName) ||
+                  Object.prototype.hasOwnProperty.call(testedValue, `_${mandatoryName}`)
+                );
+              if (!isSatisfied) {
+                const err = FlashErrorGenerator.createFhirContextError("F5130", expr, {
+                  fhirParent: (child.__flashPathRefKey).replace('::', '/'),
+                  fhirElement: mandatory.__flashPathRefKey.split('::')[1],
+                });
+                const policy = createPolicy(this.environment);
+                if (policy.enforce(err)) {
+                  throw err;
+                }
+              }
+            }
+          }
+        }
       }
     }
 
