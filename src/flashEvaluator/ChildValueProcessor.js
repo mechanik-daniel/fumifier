@@ -27,6 +27,9 @@ const DECORATIVE_ELEMENTS = new Set([
   'Quantity.unit'
 ]);
 
+// Symbol for mandatory children tracking
+const SYM_MANDATORIES = Symbol.for('fumifier.__mandatoryChildren');
+
 /**
  * Handles child value processing within flash evaluation
  */
@@ -117,11 +120,13 @@ class ChildValueProcessor {
         }
       } else {
         // complex type or primitive type - merge all objects into one
+        const mandatories = valuesForName[0]?.[SYM_MANDATORIES];
         const mergedValue = fn.merge(valuesForName);
         if (Object.keys(mergedValue).length > 0) {
           // re-attach mandatory children info
-          const SYM = Symbol.for('fumifier.__mandatoryChildren');
-          mergedValue[SYM] = valuesForName[0][SYM];
+          if (typeof mandatories !== 'undefined') {
+            mergedValue[SYM_MANDATORIES] = mandatories;
+          }
           values.push({ name, kind: kindForName, value: [mergedValue] });
         }
       }
@@ -159,49 +164,48 @@ class ChildValueProcessor {
           line: expr.line
         }, undefined, this.environment);
 
-        // if the autoValue is not undefined, we add it to the values array
-        if (typeof autoValue !== 'undefined') {
+        // if the autoValue is not empty, we add it to the values array
+        if (typeof autoValue !== 'undefined' && (typeof autoValue.value !== 'object' || Object.keys(autoValue.value).length > 0)) {
           values.push({ name: autoValue.key, kind: autoValue.kind, value: [autoValue.value] });
         }
       } catch (error) {
         // If the element failed to auto generate, we ignore the error and just don't add anything to the values array
       }
-    } else {
-      // we have collected values for this element.
-      // first if there is __mandatories on the first value, we will keep that list for checking
-      const mandatories = values[0]?.value[0]?.[Symbol.for('fumifier.__mandatoryChildren')];
-      // now if mandatories exist, we will iterate on each value in each values entry
-      // and check for satisfaction
-      if (mandatories) {
-        for (const { value: valueArray } of values) {
-          for (const testedValue of valueArray) {
-            // only objects can have mandatory elements
-            if (typeof testedValue !== 'object' || testedValue === null) {
-              continue;
-            }
+    }
 
-            // now we will check if all mandatory elements are satisfied
-            for (const mandatory of mandatories) {
-              const isSatisfied = mandatory.kind ?
-                // non-polymorphic
-                mandatory.names.some(mandatoryName =>
-                  Object.prototype.hasOwnProperty.call(testedValue, mandatoryName) ||
-                  (mandatory.kind === 'primitive-type' && Object.prototype.hasOwnProperty.call(testedValue, `_${mandatoryName}`))
-                ) :
-                // polymorphic
-                mandatory.names.some(mandatoryName =>
-                  Object.prototype.hasOwnProperty.call(testedValue, mandatoryName) ||
-                  Object.prototype.hasOwnProperty.call(testedValue, `_${mandatoryName}`)
-                );
-              if (!isSatisfied) {
-                const err = FlashErrorGenerator.createFhirContextError("F5130", expr, {
-                  fhirParent: (child.__flashPathRefKey).replace('::', '/'),
-                  fhirElement: mandatory.__flashPathRefKey.split('::')[1],
-                });
-                const policy = createPolicy(this.environment);
-                if (policy.enforce(err)) {
-                  throw err;
-                }
+    // if there is __mandatories on the first value, we will keep that list for checking
+    const mandatories = values[0]?.value[0]?.[Symbol.for('fumifier.__mandatoryChildren')];
+    // now if mandatories exist, we will iterate on each value in each values entry
+    // and check for satisfaction
+    if (mandatories) {
+      for (const { value: valueArray } of values) {
+        for (const testedValue of valueArray) {
+          // only objects can have mandatory elements
+          if (typeof testedValue !== 'object' || testedValue === null) {
+            continue;
+          }
+
+          // now we will check if all mandatory elements are satisfied
+          for (const mandatory of mandatories) {
+            const isSatisfied = mandatory.kind ?
+              // non-polymorphic
+              mandatory.names.some(mandatoryName =>
+                Object.prototype.hasOwnProperty.call(testedValue, mandatoryName) ||
+                (mandatory.kind === 'primitive-type' && Object.prototype.hasOwnProperty.call(testedValue, `_${mandatoryName}`))
+              ) :
+              // polymorphic
+              mandatory.names.some(mandatoryName =>
+                Object.prototype.hasOwnProperty.call(testedValue, mandatoryName) ||
+                Object.prototype.hasOwnProperty.call(testedValue, `_${mandatoryName}`)
+              );
+            if (!isSatisfied) {
+              const err = FlashErrorGenerator.createFhirContextError("F5130", expr, {
+                fhirParent: (child.__flashPathRefKey).replace('::', '/'),
+                fhirElement: mandatory.__flashPathRefKey.split('::')[1],
+              });
+              const policy = createPolicy(this.environment);
+              if (policy.enforce(err)) {
+                throw err;
               }
             }
           }
