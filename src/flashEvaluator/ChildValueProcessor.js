@@ -169,6 +169,10 @@ class ChildValueProcessor {
           values.push({ name: autoValue.key, kind: autoValue.kind, value: [autoValue.value] });
         }
       } catch (error) {
+        // Re-throw validation errors (F5xxx) - only catch auto-generation failures
+        if (error.code && error.code.startsWith('F5')) {
+          throw error;
+        }
         // If the element failed to auto generate, we ignore the error and just don't add anything to the values array
       }
     }
