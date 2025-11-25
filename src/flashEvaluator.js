@@ -714,6 +714,50 @@ function createFlashEvaluator(evaluate) {
   }
 
   /**
+   * Validate mandatory children at root level
+   * @param {Object} result - Result object with mandatory children attached
+   * @param {Object} expr - Original expression
+   * @param {Object} environment - Environment with policy/diagnostics
+   */
+  function validateRootMandatoryChildren(result, expr, environment) {
+    if (!result || typeof result !== 'object') {
+      return; // no result to validate
+    }
+
+    const mandatories = result[Symbol.for('fumifier.__mandatoryChildren')];
+    if (!mandatories || !Array.isArray(mandatories)) {
+      return; // no mandatory children to validate
+    }
+
+    const policy = createPolicy(environment);
+
+    // Check each mandatory element
+    for (const mandatory of mandatories) {
+      const isSatisfied = mandatory.kind ?
+        // non-polymorphic
+        mandatory.names.some(mandatoryName =>
+          Object.prototype.hasOwnProperty.call(result, mandatoryName) ||
+          (mandatory.kind === 'primitive-type' && Object.prototype.hasOwnProperty.call(result, `_${mandatoryName}`))
+        ) :
+        // polymorphic
+        mandatory.names.some(mandatoryName =>
+          Object.prototype.hasOwnProperty.call(result, mandatoryName) ||
+          Object.prototype.hasOwnProperty.call(result, `_${mandatoryName}`)
+        );
+
+      if (!isSatisfied) {
+        const err = FlashErrorGenerator.createFhirContextError("F5130", expr, {
+          fhirParent: (expr.flashPathRefKey || expr.instanceof).replace('::', '/'),
+          fhirElement: mandatory.__flashPathRefKey.split('::')[1],
+        });
+        if (policy.enforce(err)) {
+          throw err;
+        }
+      }
+    }
+  }
+
+  /**
    * All FLASH blocks and rules evaluation is funneled through this function.
    * It evaluates the specialized unary operator AST node and returns the result.
    * The inline expression and any rules/sub-rules are evaluated and applied to the output.
@@ -903,7 +947,10 @@ function createFlashEvaluator(evaluate) {
 
     attachMandatoryChildren(result, children, expr, environment);
 
-    // Flatten FHIR primitive values in the final result JUST BEFORE returning
+    // Validate mandatory children at root level - only for non-virtual flash blocks
+    if (expr.isFlashBlock && !expr.isVirtualRule) {
+      validateRootMandatoryChildren(result, expr, environment);
+    }    // Flatten FHIR primitive values in the final result JUST BEFORE returning
     if (result && typeof result === 'object' && !Array.isArray(result)) {
       result = ResultProcessor.flattenPrimitiveValues(result);
     }
