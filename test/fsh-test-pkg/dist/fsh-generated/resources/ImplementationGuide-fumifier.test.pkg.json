@@ -121,6 +121,14 @@
       },
       {
         "reference": {
+          "reference": "StructureDefinition/MandatoryChildOnSliceHead"
+        },
+        "name": "Mandatory Child On Slice Head Profile",
+        "description": "A test profile for validating mandatory child behavior with sliced identifiers",
+        "exampleBoolean": false
+      },
+      {
+        "reference": {
           "reference": "StructureDefinition/ObsCodeOnly"
         },
         "name": "Observation.code Only",
