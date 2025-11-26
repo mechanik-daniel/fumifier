@@ -2507,8 +2507,8 @@ var fumifier = (function() {
         // Setup evaluation environment with common logic, but preserve original timestamp behavior
         var exec_env = await setupEvaluationEnvironment(environment, bindings, input, mappingCache, false);
 
-        timestamp = new Date();
-        executionId = utils.generateUuid();
+        const timestamp = new Date();
+        const executionId = utils.generateUuid();
         exec_env.timestamp = timestamp;
         exec_env.executionId = executionId;
         exec_env.bind('executionId', executionId);
