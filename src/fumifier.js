@@ -2172,8 +2172,9 @@ var fumifier = (function() {
 
       if (typeof expr !== 'string') {
         throw {
-          code: "D3131",
-          value: `Mapping '${mappingKey}' must be a string expression`,
+          code: "F3008",
+          value: mappingKey,
+          valueType: typeof expr,
           stack: (new Error()).stack
         };
       }

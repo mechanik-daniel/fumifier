@@ -228,6 +228,7 @@ const errorCodes = {
   "F3001": "Failed to evaluate mapping {{value}}: {{{sourceMessage}}}",
   "F3002": "Failed to parse mapping {{value}}: {{{sourceMessage}}}",
   "F3006": "Failed to retrieve mapping {{value}} from cache: {{{sourceMessage}}}",
+  "F3008": "Mapping {{value}} must be a string expression. Instead got type: {{valueType}}.",
   "F5110": "The value {{value}} is invalid for FHIR element {{fhirElement}} (type: {{fhirType}}) in {{instanceOf}}. The value must match the regular expression: {{{regex}}}",
   "F5111": "The value {{value}} is invalid for FHIR element {{fhirElement}} (type: {{fhirType}}) in {{instanceOf}}. The value must be a valid calendar date/dateTime.",
   "F5112": "The value {{value}} is invalid for FHIR element {{fhirElement}} (type: {{fhirType}}) in {{instanceOf}}. Strings must contain at least one non-whitespace character and may only include TAB, LF, CR, or Unicode characters U+0020 and above (excluding U+0080..U+009F).",
