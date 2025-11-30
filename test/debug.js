@@ -74,7 +74,11 @@ void async function () {
 InstanceOf: Patient
 * extension[ext-il-hmo].value.coding
   * code = '101'
+    * id = 'code-id-123'
   * display = 'Custom HMO Name'
+    * extension
+      * url = 'http://example.org/display-ext'
+      * valueString = 'additional info'
 `
 ;
 

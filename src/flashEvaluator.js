@@ -353,6 +353,47 @@ function createFlashEvaluator(evaluate) {
   }
 
   /**
+   * Helper function to reorder Coding/Quantity properties after context-dependent system/display injection
+   * This is specifically for injections that happen when user provides code and system/display are derived from ValueSet
+   * @param {Object} obj The Coding or Quantity object to reorder
+   * @param {string} dataType The FHIR datatype name ('Coding' or 'Quantity')
+   */
+  function reorderCodingQuantityAfterContextInjection(obj, dataType) {
+    if (!obj || typeof obj !== 'object') return;
+
+    const elementOrder = dataType === 'Quantity' ?
+      ['value', 'comparator', 'unit', 'system', 'code'] :
+      ['system', 'version', 'code', 'display', 'userSelected']; // Coding
+
+    const reordered = {};
+
+    // Add properties in correct order, including their _ prefixed siblings
+    for (const prop of elementOrder) {
+      // Add the base property if it exists
+      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+        reordered[prop] = obj[prop];
+      }
+
+      // Add the corresponding _property if it exists (for FHIR primitive extensions)
+      const underscoreProp = `_${prop}`;
+      if (Object.prototype.hasOwnProperty.call(obj, underscoreProp)) {
+        reordered[underscoreProp] = obj[underscoreProp];
+      }
+    }
+
+    // Add any remaining properties not in the standard order
+    for (const prop of Object.keys(obj)) {
+      if (!elementOrder.includes(prop) && !elementOrder.some(baseProp => `_${baseProp}` === prop)) {
+        reordered[prop] = obj[prop];
+      }
+    }
+
+    // Replace object properties in place
+    Object.keys(obj).forEach(key => delete obj[key]);
+    Object.assign(obj, reordered);
+  }
+
+  /**
    * Process and validate complex Coding/Quantity/CodeableConcept binding with system/display injection
    * @param {string} kindCode Element type code (Coding|Quantity|CodeableConcept)
    * @param {Object} valueObj Evaluated value object (intermediate with primitives inside)
@@ -431,6 +472,9 @@ function createFlashEvaluator(evaluate) {
           valueObj.system = concept.system;
           injectionOccurred = true;
           validPair = true;
+
+          // Reorder to maintain correct FHIR element order
+          reorderCodingQuantityAfterContextInjection(valueObj, kindCode);
         }
       }
 
@@ -445,6 +489,9 @@ function createFlashEvaluator(evaluate) {
         if (!currentDisplayValue && concept.display) {
           valueObj[displayField] = concept.display;
           injectionOccurred = true;
+
+          // Reorder to maintain correct FHIR element order
+          reorderCodingQuantityAfterContextInjection(valueObj, kindCode);
         }
       }      // Validation for required/extensible bindings only
       if (strength === 'required') {
@@ -482,6 +529,9 @@ function createFlashEvaluator(evaluate) {
             injectionOccurred = true;
             validPair = true;
             anyValid = true;
+
+            // Reorder to maintain correct FHIR element order
+            reorderCodingQuantityAfterContextInjection(c, 'Coding');
           }
         }
 
@@ -489,6 +539,9 @@ function createFlashEvaluator(evaluate) {
         if (concept && validPair && !display && concept.display) {
           c.display = concept.display;
           injectionOccurred = true;
+
+          // Reorder to maintain correct FHIR element order
+          reorderCodingQuantityAfterContextInjection(c, 'Coding');
         }
       }
 
