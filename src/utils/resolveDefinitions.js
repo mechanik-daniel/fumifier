@@ -186,7 +186,12 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
 
       ed.__bindingStrength = strength;
 
-      const sourcePackage = { id: meta?.__packageId, version: meta?.__packageVersion };
+      // Use element's source package if available (for extension elements),
+      // otherwise fall back to parent structure's package
+      const sourcePackage = {
+        id: ed.__packageId || meta?.__packageId,
+        version: ed.__packageVersion || meta?.__packageVersion
+      };
       if (!sourcePackage.id || !sourcePackage.version) return; // cannot scope expansion properly
 
       const trackerKey = `${sourcePackage.id}@${sourcePackage.version}::${vsUrl}`;
