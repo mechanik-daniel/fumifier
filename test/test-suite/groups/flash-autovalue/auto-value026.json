@@ -1,6 +1,5 @@
 {
-  "skip": false,
-  "description": "Blood pressure profile with primitive flattening in auto-values - ensures FHIR primitives like system and code are flattened from {\"value\": \"primitive\"} to \"primitive\"",
+  "description": "System injection for Quantity when code+unit provided (blood pressure)",
   "data": null,
   "result": {
     "resourceType": "Observation",
@@ -42,6 +41,12 @@
               "code": "8480-6"
             }
           ]
+        },
+        "valueQuantity": {
+          "value": 120,
+          "unit": "Custom Unit Name",
+          "system": "http://unitsofmeasure.org",
+          "code": "mm[Hg]"
         }
       },
       {
@@ -52,9 +57,15 @@
               "code": "8462-4"
             }
           ]
+        },
+        "valueQuantity": {
+          "value": 80,
+          "unit": "Custom Unit Name",
+          "system": "http://unitsofmeasure.org",
+          "code": "mm[Hg]"
         }
       }
     ]
   },
-  "expr-file": "auto-value006.fume"
+  "expr-file": "auto-value026.fume"
 }

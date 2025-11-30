@@ -147,11 +147,20 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
       let strength;
       let vsUrl;
 
+      // Helper function to check binding strength and extract valueSet
+      const checkBindingStrength = (targetStrength, valueSetSource) => {
+        if (binding.strength === targetStrength && typeof valueSetSource === 'string' && valueSetSource.trim() !== '') {
+          return { strength: targetStrength, vsUrl: valueSetSource.trim() };
+        }
+        return null;
+      };
+
       // (a) required + valueSet (any non-empty string incl. URNs treated as valid identifier)
-      if (typeof binding.strength === 'string' && binding.strength === 'required' && typeof binding.valueSet === 'string' && binding.valueSet.trim() !== '') {
-        strength = 'required';
-        vsUrl = binding.valueSet.trim();
-      } else if (!vsUrl) {
+      let result = checkBindingStrength('required', binding.valueSet);
+      if (result) {
+        strength = result.strength;
+        vsUrl = result.vsUrl;
+      } else {
         // (b) extension elementdefinition-maxValueSet
         const ext = Array.isArray(binding.extension) ? binding.extension.find(e => e && e.url === 'http://hl7.org/fhir/StructureDefinition/elementdefinition-maxValueSet' && typeof e.valueCanonical === 'string' && e.valueCanonical.trim() !== '') : undefined;
         if (ext) {
@@ -159,11 +168,17 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
           vsUrl = ext.valueCanonical.trim();
         }
       }
+
+      // (c-e) Check other binding strengths in order of precedence
       if (!vsUrl) {
-        // (c) extensible + valueSet
-        if (typeof binding.strength === 'string' && binding.strength === 'extensible' && typeof binding.valueSet === 'string' && binding.valueSet.trim() !== '') {
-          strength = 'extensible';
-          vsUrl = binding.valueSet.trim();
+        const strengthPriority = ['extensible', 'preferred', 'example'];
+        for (const targetStrength of strengthPriority) {
+          result = checkBindingStrength(targetStrength, binding.valueSet);
+          if (result) {
+            strength = result.strength;
+            vsUrl = result.vsUrl;
+            break;
+          }
         }
       }
 
@@ -171,7 +186,12 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
 
       ed.__bindingStrength = strength;
 
-      const sourcePackage = { id: meta?.__packageId, version: meta?.__packageVersion };
+      // Use element's source package if available (for extension elements),
+      // otherwise fall back to parent structure's package
+      const sourcePackage = {
+        id: ed.__packageId || meta?.__packageId,
+        version: ed.__packageVersion || meta?.__packageVersion
+      };
       if (!sourcePackage.id || !sourcePackage.version) return; // cannot scope expansion properly
 
       const trackerKey = `${sourcePackage.id}@${sourcePackage.version}::${vsUrl}`;
@@ -199,7 +219,7 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
           const pkgVersion = vs.__packageVersion || sourcePackage.version;
           const filename = vs.__filename || vs.id || vs.url || vsUrl;
           vsRefKey = `${pkgId}@${pkgVersion}::${filename}`;
-          if (count <= 100) {
+          if (count <= 300) {
             const transformed = transformExpansion(vs.expansion);
             resolvedValueSetExpansions[vsRefKey] = transformed;
             mode = 'full';

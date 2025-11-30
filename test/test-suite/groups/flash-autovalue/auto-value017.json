@@ -1,6 +1,6 @@
 {
   "skip": false,
-  "description": "Blood pressure profile with primitive flattening in auto-values - ensures FHIR primitives like system and code are flattened from {\"value\": \"primitive\"} to \"primitive\"",
+  "description": "Blood pressure component quantities auto-inject 'millimeter of mercury' units for UCUM codes - validates the main use case for automatic unit injection",
   "data": null,
   "result": {
     "resourceType": "Observation",
@@ -42,6 +42,12 @@
               "code": "8480-6"
             }
           ]
+        },
+        "valueQuantity": {
+          "value": 120,
+          "unit": "millimeter of mercury",
+          "system": "http://unitsofmeasure.org",
+          "code": "mm[Hg]"
         }
       },
       {
@@ -52,9 +58,15 @@
               "code": "8462-4"
             }
           ]
+        },
+        "valueQuantity": {
+          "value": 80,
+          "unit": "millimeter of mercury",
+          "system": "http://unitsofmeasure.org",
+          "code": "mm[Hg]"
         }
       }
     ]
   },
-  "expr-file": "auto-value006.fume"
+  "expr-file": "auto-value017.fume"
 }

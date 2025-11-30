@@ -7,6 +7,7 @@
       "coding": [
         {
           "code": "101",
+          "display": "קופת חולים כללית",
           "system": "http://fhir.health.gov.il/cs/paying-entity-moh"
         }
       ],
