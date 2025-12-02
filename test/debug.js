@@ -6,14 +6,16 @@ import fumifier from '../src/fumifier.js';
 import { FhirSnapshotGenerator } from 'fhir-snapshot-generator';
 import { FhirStructureNavigator } from '@outburn/structure-navigator';
 
-var context = ['il.core.fhir.r4#0.17.0', 'fumifier.test.pkg#0.1.0'];
+// var context = ['il.core.fhir.r4#0.17.0', 'fumifier.test.pkg#0.1.0'];
+var context = ['il.szmc.fhir.r4#0.3.3'];
 
 void async function () {
   var generator = await FhirSnapshotGenerator.create({
     context,
     cachePath: './test/.test-cache',
     fhirVersion: '4.0.1',
-    cacheMode: 'lazy'
+    cacheMode: 'lazy',
+    // logger: console
   });
 
   var navigator = new FhirStructureNavigator(generator);
@@ -31,13 +33,30 @@ void async function () {
 
 
 
-InstanceOf: il-core-patient
-* birthDate = '1980-01-01'
-* identifier[il-id].value = '123456789'
-* name
-  * family = 'Doe'
-  * given = ['John', 'A.']
+// (InstanceOf: ILHDPCondition
+// * identifier
+//   * system = 'urn:ietf:rfc:3986'
+//   * value = 'urn:uuid:550e8400-e29b-41d4-a716-446655440000'
+// * category.coding.code = 'problem-list-item'
+// * code.text = 'Diabetes mellitus type 2'
+// * subject.reference = 'Patient/12345'
+// * recordedDate = '2024-06-01T10:00:00Z'
+// * recorder.display = 'Dr. Jane Smith'
+// * severity.coding.code = '255604002');
+// $trace('additional info');
 
+InstanceOf: il-core-patient
+* identifier[il-id].value = '123'
+* name
+  * given = 'John'
+  * family = 'Doe'
+* gender = 'unknown'
+* birthDate = '1985'
+* address.extension[language].value = 'en'
+
+
+// * maritalStatus.coding.code = 'UNK'
+// * address.city.extension[cityCode].value.coding.code = '4000'
 
 // InstanceOf: TestSliceValidation
 // * status = 'unknown'
@@ -84,6 +103,22 @@ InstanceOf: il-core-patient
 // * recordedDate = "2023-01-15T08:00:00Z"
 // * recorder.display = "Dr. Alice Smith"
 // * severity.coding
+
+
+// InstanceOf: SZMCCondition
+// * identifier
+//   * system = 'urn:ietf:rfc:3986'
+//   * value = 'urn:uuid:550e8400-e29b-41d4-a716-446655440000'
+// * id = 'abc123'
+// * clinicalStatus
+//   * coding.code = 'active'
+//   * coding[szmc].code = '2'
+// * category.coding.code = 'problem-list-item'
+// * code.text = 'Diabetes mellitus type 2'
+// * subject.reference = 'Patient/12345'
+// * recordedDate = '2024-06-01T10:00:00Z'
+// * recorder.display = 'Dr. Jane Smith'
+// * severity.coding.code = '255604002'
 `
 ;
 
@@ -122,6 +157,7 @@ InstanceOf: il-core-patient
   var res;
 
   try {
+    expr.setLogger(console);
     res = await expr.evaluate(
       {
         resourceType: "Patient"
