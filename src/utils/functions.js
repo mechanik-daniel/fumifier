@@ -2724,7 +2724,7 @@ const functions = (() => {
 
   return {
     sum, count, max, min, average,
-    string, substring, substringBefore, substringAfter, lowercase, uppercase, length, trim, pad,
+    string, stringify, substring, substringBefore, substringAfter, lowercase, uppercase, length, trim, pad,
     match, contains, replace, split, join, startsWith, endsWith, matches, isEmpty, isNumeric: _isNumeric,
     formatNumber, formatBase, number, floor, ceil, round, abs, sqrt, power, random,
     boolean, boolize, not,
