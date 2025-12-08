@@ -2459,6 +2459,54 @@ const functions = (() => {
   }
 
   /**
+     * Omits key/value pairs from an object where the key matches any of the strings in the provided array
+     *
+     * @param {object} arg - the object to filter
+     * @param {string|Array} keysToOmit - string or array of strings specifying keys to omit
+     * @returns {object} - object with specified keys omitted
+     */
+  function omitKeys(arg, keysToOmit) {
+    // undefined inputs always return undefined
+    if (typeof arg === 'undefined') {
+      return undefined;
+    }
+
+    // Handle empty or undefined keysToOmit - return a shallow copy
+    if (typeof keysToOmit === 'undefined' || keysToOmit === null) {
+      return JSON.parse(string(arg));
+    }
+
+    // Normalize keysToOmit to an array
+    var keysArray;
+    if (typeof keysToOmit === 'string') {
+      keysArray = [keysToOmit];
+    } else if (Array.isArray(keysToOmit)) {
+      keysArray = keysToOmit;
+    } else {
+      keysArray = [keysToOmit];
+    }
+
+    var result = {};
+
+    for (var key in arg) {
+      // Check if this key should be omitted
+      var shouldOmit = false;
+      for (var i = 0; i < keysArray.length; i++) {
+        if (key === string(keysArray[i])) {
+          shouldOmit = true;
+          break;
+        }
+      }
+
+      if (!shouldOmit) {
+        result[key] = arg[key];
+      }
+    }
+
+    return result;
+  }
+
+  /**
      * Test a string a gainst the FHIR decimal datatype RegEx
      * @param {String} str - the string to test
      * @returns {Boolean} - boolean
@@ -2596,7 +2644,7 @@ const functions = (() => {
     match, contains, replace, split, join, startsWith, endsWith, matches, isEmpty, isNumeric: _isNumeric,
     formatNumber, formatBase, number, floor, ceil, round, abs, sqrt, power, random,
     boolean, boolize, not,
-    map, zip, filter, pMap, pLimit, first, single, foldLeft, sift,
+    map, zip, filter, pMap, pLimit, first, single, foldLeft, sift, omitKeys,
     keys, lookup, append, exists, spread, merge, reverse, each, error, assert, type, sort, shuffle, distinct,
     base64encode, base64decode,  encodeUrlComponent, encodeUrl, decodeUrlComponent, decodeUrl,
     wait, rightNow, initCapOnce, initCap, uuid, reference, hash
