@@ -107,6 +107,7 @@ function registerNativeFn(staticFrame, functionEval) {
   staticFrame.bind('matches', defineFunction(fn.matches, '<s-sa<s>?:b>'));
   staticFrame.bind('isEmpty', defineFunction(fn.isEmpty, '<x-:b>'));
   staticFrame.bind('isNumeric', defineFunction(fn.isNumeric, '<j-:b>'));
+  staticFrame.bind('stringify', defineFunction(fn.stringify, '<x-b?:s>'));
   staticFrame.bind('wait', defineFunction(fn.wait), '<n->');
   staticFrame.bind('rightNow', defineFunction(fn.rightNow), '<:n>');
   staticFrame.bind('initCapOnce', defineFunction(fn.initCapOnce, '<s-:s>'));

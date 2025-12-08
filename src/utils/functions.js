@@ -192,6 +192,42 @@ const functions = (() => {
   }
 
   /**
+     * Stringify arguments (always applies JSON.stringify, even for string inputs)
+     * @param {Object} arg - Arguments
+     * @param {boolean} [prettify] - Pretty print the result
+     * @returns {String} String from arguments
+     */
+  function stringify(arg, prettify = false) {
+    // undefined inputs always return undefined
+    if (typeof arg === 'undefined') {
+      return undefined;
+    }
+
+    var str;
+
+    if (isFunction(arg)) {
+      // functions (built-in and lambda convert to empty string
+      str = '';
+    } else if (typeof arg === 'number' && !isFinite(arg)) {
+      throw {
+        code: "D3001",
+        value: arg,
+        stack: (new Error()).stack
+      };
+    } else {
+      var space = prettify ? 2 : 0;
+      if(Array.isArray(arg) && arg.outerWrapper) {
+        arg = arg[0];
+      }
+      str = JSON.stringify(arg, function (key, val) {
+        return (typeof val !== 'undefined' && val !== null && val.toPrecision && isNumeric(val)) ? Number(val.toPrecision(15)) :
+          (val && isFunction(val)) ? '' : val;
+      }, space);
+    }
+    return str;
+  }
+
+  /**
      * Create substring based on character number and length
      * @param {String} str - String to evaluate
      * @param {Integer} start - Character number to start substring
