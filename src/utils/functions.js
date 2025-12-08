@@ -354,10 +354,9 @@ const functions = (() => {
     } catch (error) {
       // Invalid regex - throw appropriate error
       throw {
-        code: "T1040",
+        code: "D3500",
         stack: (new Error()).stack,
-        value: regex,
-        errorMessage: "Invalid regular expression: " + error.message
+        value: regex
       };
     }
   }  /**
