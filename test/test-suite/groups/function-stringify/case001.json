@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify(22/7)",
+    "data": null,
+    "bindings": {},
+    "result": "3.14285714285714"
+}

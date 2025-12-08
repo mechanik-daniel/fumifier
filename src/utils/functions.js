@@ -192,6 +192,42 @@ const functions = (() => {
   }
 
   /**
+     * Stringify arguments (always applies JSON.stringify, even for string inputs)
+     * @param {Object} arg - Arguments
+     * @param {boolean} [prettify] - Pretty print the result
+     * @returns {String} String from arguments
+     */
+  function stringify(arg, prettify = false) {
+    // undefined inputs always return undefined
+    if (typeof arg === 'undefined') {
+      return undefined;
+    }
+
+    var str;
+
+    if (isFunction(arg)) {
+      // functions (built-in and lambda convert to empty string
+      str = '';
+    } else if (typeof arg === 'number' && !isFinite(arg)) {
+      throw {
+        code: "D3001",
+        value: arg,
+        stack: (new Error()).stack
+      };
+    } else {
+      var space = prettify ? 2 : 0;
+      if(Array.isArray(arg) && arg.outerWrapper) {
+        arg = arg[0];
+      }
+      str = JSON.stringify(arg, function (key, val) {
+        return (typeof val !== 'undefined' && val !== null && val.toPrecision && isNumeric(val)) ? Number(val.toPrecision(15)) :
+          (val && isFunction(val)) ? '' : val;
+      }, space);
+    }
+    return str;
+  }
+
+  /**
      * Create substring based on character number and length
      * @param {String} str - String to evaluate
      * @param {Integer} start - Character number to start substring
@@ -294,6 +330,132 @@ const functions = (() => {
       return undefined;
     }
     return str.endsWith(endStr);
+  }
+
+  /**
+     * Tests if the str matches the given regex pattern (FHIRPath-style)
+     * @param {String} str - string to test
+     * @param {String} regex - regex pattern as a string
+     * @param {Array} [flags] - optional array of flags: 'i' (case-insensitive), 'm' (multiline), 'full' (full match)
+     * @returns {Boolean|undefined} - true if str matches regex, undefined for invalid inputs
+     */
+  function matches(str, regex, flags) {
+    // undefined inputs always return undefined
+    if (typeof str === 'undefined') {
+      return undefined;
+    }
+
+    // If regex is empty string, return undefined per FHIRPath spec
+    if (typeof regex === 'undefined' || regex === '') {
+      return undefined;
+    }
+
+    // If input is empty string, return undefined per FHIRPath spec
+    if (str === '') {
+      return undefined;
+    }
+
+    try {
+      // Parse flags
+      var jsFlags = '';
+      var useFullMatch = false;
+
+      if (Array.isArray(flags)) {
+        for (var i = 0; i < flags.length; i++) {
+          var flag = flags[i];
+          if (flag === 'i') {
+            jsFlags += 'i';
+          } else if (flag === 'm') {
+            jsFlags += 'm';
+          } else if (flag === 'full') {
+            useFullMatch = true;
+          }
+        }
+      }
+
+      // For 'full' flag, wrap regex with ^ and $ if not already present
+      var finalRegex = regex;
+      if (useFullMatch) {
+        if (!regex.startsWith('^')) {
+          finalRegex = '^' + finalRegex;
+        }
+        if (!regex.endsWith('$')) {
+          finalRegex = finalRegex + '$';
+        }
+      }
+
+      var regexObj = new RegExp(finalRegex, jsFlags);
+      return regexObj.test(str);
+
+    } catch (error) {
+      // Invalid regex - throw appropriate error
+      throw {
+        code: "D3500",
+        stack: (new Error()).stack,
+        value: regex
+      };
+    }
+  }
+
+  /**
+   * Check if a value is empty using recursive deep inspection
+   * @param {*} value - Value to check for emptiness (optional, uses context if not provided)
+   * @returns {boolean} true if value is empty, false otherwise
+   */
+  function isEmpty(value) {
+    // Handle undefined - considered empty
+    if (typeof value === 'undefined') {
+      return true;
+    }
+
+    // Handle null - considered empty
+    if (value === null) {
+      return true;
+    }
+
+    // Handle strings - empty or whitespace-only strings are empty
+    if (typeof value === 'string') {
+      return value.trim().length === 0;
+    }
+
+    // Handle numbers - all numbers including zero are considered values (non-empty)
+    if (typeof value === 'number') {
+      return false;
+    }
+
+    // Handle booleans - all booleans are considered values (non-empty)
+    if (typeof value === 'boolean') {
+      return false;
+    }
+
+    // Handle functions - considered non-empty values
+    if (isFunction(value)) {
+      return false;
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+      // Empty array is empty
+      if (value.length === 0) {
+        return true;
+      }
+      // Array is empty if all elements are empty
+      return value.every(item => isEmpty(item));
+    }
+
+    // Handle objects
+    if (typeof value === 'object') {
+      var keys = Object.keys(value);
+      // Empty object is empty
+      if (keys.length === 0) {
+        return true;
+      }
+      // Object is empty if all values are empty
+      return keys.every(key => isEmpty(value[key]));
+    }
+
+    // All other values are non-empty
+    return false;
   }
 
   /**
@@ -2333,6 +2495,102 @@ const functions = (() => {
   }
 
   /**
+     * Omits key/value pairs from an object where the key matches any of the strings in the provided array
+     *
+     * @param {object} arg - the object to filter
+     * @param {string|Array} keysToOmit - string or array of strings specifying keys to omit
+     * @returns {object} - object with specified keys omitted
+     */
+  function omitKeys(arg, keysToOmit) {
+    // undefined inputs always return undefined
+    if (typeof arg === 'undefined') {
+      return undefined;
+    }
+
+    // Handle empty or undefined keysToOmit - return a shallow copy
+    if (typeof keysToOmit === 'undefined' || keysToOmit === null) {
+      return JSON.parse(string(arg));
+    }
+
+    // Normalize keysToOmit to an array
+    var keysArray;
+    if (typeof keysToOmit === 'string') {
+      keysArray = [keysToOmit];
+    } else if (Array.isArray(keysToOmit)) {
+      keysArray = keysToOmit;
+    } else {
+      keysArray = [keysToOmit];
+    }
+
+    var result = {};
+
+    for (var key in arg) {
+      // Check if this key should be omitted
+      var shouldOmit = false;
+      for (var i = 0; i < keysArray.length; i++) {
+        if (key === string(keysArray[i])) {
+          shouldOmit = true;
+          break;
+        }
+      }
+
+      if (!shouldOmit) {
+        result[key] = arg[key];
+      }
+    }
+
+    return result;
+  }
+
+  /**
+     * Selects key/value pairs from an object where the key matches any of the strings in the provided array
+     *
+     * @param {object} arg - the object to filter
+     * @param {string|Array} keysToSelect - string or array of strings specifying keys to select
+     * @returns {object} - object with only the specified keys included
+     */
+  function selectKeys(arg, keysToSelect) {
+    // undefined inputs always return undefined
+    if (typeof arg === 'undefined') {
+      return undefined;
+    }
+
+    // Handle empty or undefined keysToSelect - return empty object
+    if (typeof keysToSelect === 'undefined' || keysToSelect === null) {
+      return {};
+    }
+
+    // Normalize keysToSelect to an array
+    var keysArray;
+    if (typeof keysToSelect === 'string') {
+      keysArray = [keysToSelect];
+    } else if (Array.isArray(keysToSelect)) {
+      keysArray = keysToSelect;
+    } else {
+      keysArray = [keysToSelect];
+    }
+
+    var result = {};
+
+    for (var key in arg) {
+      // Check if this key should be selected
+      var shouldSelect = false;
+      for (var i = 0; i < keysArray.length; i++) {
+        if (key === string(keysArray[i])) {
+          shouldSelect = true;
+          break;
+        }
+      }
+
+      if (shouldSelect) {
+        result[key] = arg[key];
+      }
+    }
+
+    return result;
+  }
+
+  /**
      * Test a string a gainst the FHIR decimal datatype RegEx
      * @param {String} str - the string to test
      * @returns {Boolean} - boolean
@@ -2466,11 +2724,11 @@ const functions = (() => {
 
   return {
     sum, count, max, min, average,
-    string, substring, substringBefore, substringAfter, lowercase, uppercase, length, trim, pad,
-    match, contains, replace, split, join, startsWith, endsWith, isNumeric: _isNumeric,
+    string, stringify, substring, substringBefore, substringAfter, lowercase, uppercase, length, trim, pad,
+    match, contains, replace, split, join, startsWith, endsWith, matches, isEmpty, isNumeric: _isNumeric,
     formatNumber, formatBase, number, floor, ceil, round, abs, sqrt, power, random,
     boolean, boolize, not,
-    map, zip, filter, pMap, pLimit, first, single, foldLeft, sift,
+    map, zip, filter, pMap, pLimit, first, single, foldLeft, sift, omitKeys, selectKeys,
     keys, lookup, append, exists, spread, merge, reverse, each, error, assert, type, sort, shuffle, distinct,
     base64encode, base64decode,  encodeUrlComponent, encodeUrl, decodeUrlComponent, decodeUrl,
     wait, rightNow, initCapOnce, initCap, uuid, reference, hash

@@ -2343,7 +2343,7 @@ var fumifier = (function() {
   // Register user-facing logging functions
   (function registerLoggingFunctions(frame) {
     // $warn(message) -> F5320
-    frame.bind('warn', defineFunction(function(message) {
+    var warnImpl = defineFunction(function(message) {
       const msg = fn.string(message);
       const env = this.environment;
       const execId = env.executionId || 'unknown';
@@ -2355,7 +2355,9 @@ var fumifier = (function() {
       }
       push(env, entry);
       return undefined;
-    }, '<s?:u>'));
+    }, '<s?:u>');
+    frame.bind('warn', warnImpl);
+    frame.bind('warning', warnImpl);
 
     // $info(message) -> F5500
     frame.bind('info', defineFunction(function(message) {

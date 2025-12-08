@@ -75,6 +75,8 @@ function registerNativeFn(staticFrame, functionEval) {
   staticFrame.bind('single', defineFunction(fn.single, '<af?>'));
   staticFrame.bind('reduce', defineFunction(fn.foldLeft, '<afj?:j>')); // TODO <f<jj:j>a<j>j?:j>
   staticFrame.bind('sift', defineFunction(fn.sift, '<o-f?:o>'));
+  staticFrame.bind('omitKeys', defineFunction(fn.omitKeys, '<o-a<s>?:o>'));
+  staticFrame.bind('selectKeys', defineFunction(fn.selectKeys, '<o-a<s>?:o>'));
   staticFrame.bind('keys', defineFunction(fn.keys, '<x-:a<s>>'));
   staticFrame.bind('lookup', defineFunction(fn.lookup, '<x-s:x>'));
   staticFrame.bind('append', defineFunction(fn.append, '<xx:a>'));
@@ -102,7 +104,10 @@ function registerNativeFn(staticFrame, functionEval) {
   // FUME functions added as native functions:
   staticFrame.bind('startsWith', defineFunction(fn.startsWith, '<s-s:b>'));
   staticFrame.bind('endsWith', defineFunction(fn.endsWith, '<s-s:b>'));
+  staticFrame.bind('matches', defineFunction(fn.matches, '<s-sa<s>?:b>'));
+  staticFrame.bind('isEmpty', defineFunction(fn.isEmpty, '<x-:b>'));
   staticFrame.bind('isNumeric', defineFunction(fn.isNumeric, '<j-:b>'));
+  staticFrame.bind('stringify', defineFunction(fn.stringify, '<x-b?:s>'));
   staticFrame.bind('wait', defineFunction(fn.wait), '<n->');
   staticFrame.bind('rightNow', defineFunction(fn.rightNow), '<:n>');
   staticFrame.bind('initCapOnce', defineFunction(fn.initCapOnce, '<s-:s>'));

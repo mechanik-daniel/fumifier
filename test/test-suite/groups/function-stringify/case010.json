@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify($stringify('test'))",
+    "data": null,
+    "bindings": {},
+    "result": "\"\\\"test\\\"\""
+}

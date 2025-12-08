@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify({'string': 'hello'}, true)",
+    "data": null,
+    "bindings": {},
+    "result": "{\n  \"string\": \"hello\"\n}"
+}

@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify(['string', 5], true)",
+    "data": null,
+    "bindings": {},
+    "result": "[\n  \"string\",\n  5\n]"
+}

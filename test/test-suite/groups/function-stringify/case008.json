@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify()",
+    "data": "hello world",
+    "bindings": {},
+    "result": "\"hello world\""
+}
