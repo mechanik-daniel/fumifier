@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify(1e100)",
+    "data": null,
+    "bindings": {},
+    "result": "1e+100"
+}

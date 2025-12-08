@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify('\"quoted\"')",
+    "data": null,
+    "bindings": {},
+    "result": "\"\\\"quoted\\\"\""
+}

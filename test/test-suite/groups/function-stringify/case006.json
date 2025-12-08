@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify(blah)",
+    "data": null,
+    "bindings": {},
+    "undefinedResult": true
+}

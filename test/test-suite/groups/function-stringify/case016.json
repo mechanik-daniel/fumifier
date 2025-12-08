@@ -1,0 +1,6 @@
+{
+    "expr": "$stringify('')",
+    "data": null,
+    "bindings": {},
+    "result": "\"\""
+}
