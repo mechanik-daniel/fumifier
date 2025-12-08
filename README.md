@@ -1,6 +1,5 @@
-TODO: This is a first draft of README.md and needs some adjustments/improvents/cleanup
-
 # Fumifier
+[![npm version](https://img.shields.io/npm/v/fumifier.svg)](https://www.npmjs.com/package/fumifier)
 
 > Core FLASH DSL engine for FUME – parses, compiles & executes FHIR‑aware transformation logic over JSON data.
 
@@ -64,8 +63,6 @@ Use Fumifier when you need:
 - Enriching raw FHIR payloads guided by profiles
 - Validated outputs with controllable strictness
 - Embedding a safe, sandbox‑style expression engine in higher‑level services
-
-Not ideal if you only need simple field renaming (a static template may suffice) or extremely large streaming transformations (no streaming reader yet – whole objects are in memory).
 
 ---
 ## 4. Installation
