@@ -34,6 +34,69 @@ function createFhirClientWrappers(getFhirClient) {
   }
 
   /**
+   * Helper to handle common FHIR client errors (404, no results, multiple results)
+   * @param {Error} err - The caught error from FHIR client
+   * @param {string} operationName - Name of the operation for error reporting
+   * @param {string} resourceTypeOrRef - Resource type or reference string
+   * @param {Object} params - Search parameters (if applicable)
+   * @param {Object} environment - Execution environment
+   * @returns {undefined} Returns undefined if error should not throw
+   * @throws {Object} Throws categorized error if severity < throwLevel
+   */
+  function handleFhirClientError(err, operationName, resourceTypeOrRef, params, environment) {
+    // Check for 404 errors
+    if (err.response && err.response.status === 404) {
+      const ref = resourceTypeOrRef;
+      const [resourceType, resourceId] = ref.split('/');
+      return handleError({
+        code: 'F5210',
+        resourceType,
+        resourceId,
+        stack: err.stack || (new Error()).stack,
+        sourceError: err
+      }, environment);
+    }
+
+    // Check for "No resources found" errors
+    if (err.message && err.message.includes('No resources found')) {
+      const resourceType = typeof params === 'object' ? resourceTypeOrRef : resourceTypeOrRef.split('/')[0];
+      const searchParams = typeof params === 'object' ? params : {};
+      return handleError({
+        code: 'F5211',
+        resourceType,
+        searchParams: JSON.stringify(searchParams),
+        stack: err.stack || (new Error()).stack,
+        sourceError: err
+      }, environment);
+    }
+
+    // Check for "Multiple resources found" errors
+    if (err.message && err.message.includes('Multiple resources found')) {
+      const resourceType = typeof params === 'object' ? resourceTypeOrRef : resourceTypeOrRef.split('/')[0];
+      const searchParams = typeof params === 'object' ? params : {};
+      const match = err.message.match(/\((\d+) found\)/);
+      const resultCount = match ? match[1] : 'multiple';
+      return handleError({
+        code: 'F5212',
+        resourceType,
+        searchParams: JSON.stringify(searchParams),
+        resultCount,
+        stack: err.stack || (new Error()).stack,
+        sourceError: err
+      }, environment);
+    }
+
+    // Generic FHIR client error
+    return handleError({
+      code: 'F5203',
+      operation: operationName,
+      errorMessage: err.message || String(err),
+      stack: err.stack || (new Error()).stack,
+      sourceError: err
+    }, environment);
+  }
+
+  /**
    * Helper to get FHIR client or throw appropriate error (respects policy)
    * @param {Object} environment - Execution environment
    * @param {string} operationName - Name of operation for error messages
@@ -138,36 +201,7 @@ function createFhirClientWrappers(getFhirClient) {
       try {
         return await client.resourceId(resourceType, params, options);
       } catch (err) {
-        // Handle specific error messages from FHIR client
-        if (err.message && err.message.includes('No resources found')) {
-          return handleError({
-            code: 'F5211',
-            resourceType,
-            searchParams: JSON.stringify(params),
-            stack: err.stack || (new Error()).stack,
-            sourceError: err
-          }, this.environment);
-        }
-        if (err.message && err.message.includes('Multiple resources found')) {
-          const match = err.message.match(/\((\d+) found\)/);
-          const resultCount = match ? match[1] : 'multiple';
-          return handleError({
-            code: 'F5212',
-            resourceType,
-            searchParams: JSON.stringify(params),
-            resultCount,
-            stack: err.stack || (new Error()).stack,
-            sourceError: err
-          }, this.environment);
-        }
-        // Generic error
-        return handleError({
-          code: 'F5203',
-          operation: 'resourceId',
-          errorMessage: err.message || String(err),
-          stack: err.stack || (new Error()).stack,
-          sourceError: err
-        }, this.environment);
+        return handleFhirClientError(err, 'resourceId', resourceType, params, this.environment);
       }
     },
 
@@ -184,49 +218,7 @@ function createFhirClientWrappers(getFhirClient) {
       try {
         return await client.resolve(resourceTypeOrRef, params, options);
       } catch (err) {
-        if (err.response && err.response.status === 404) {
-          const ref = resourceTypeOrRef;
-          const [resourceType, resourceId] = ref.split('/');
-          return handleError({
-            code: 'F5210',
-            resourceType,
-            resourceId,
-            stack: err.stack || (new Error()).stack,
-            sourceError: err
-          }, this.environment);
-        }
-        if (err.message && err.message.includes('No resources found')) {
-          const resourceType = typeof params === 'object' ? resourceTypeOrRef : resourceTypeOrRef.split('/')[0];
-          const searchParams = typeof params === 'object' ? params : {};
-          return handleError({
-            code: 'F5211',
-            resourceType,
-            searchParams: JSON.stringify(searchParams),
-            stack: err.stack || (new Error()).stack,
-            sourceError: err
-          }, this.environment);
-        }
-        if (err.message && err.message.includes('Multiple resources found')) {
-          const resourceType = typeof params === 'object' ? resourceTypeOrRef : resourceTypeOrRef.split('/')[0];
-          const searchParams = typeof params === 'object' ? params : {};
-          const match = err.message.match(/\((\d+) found\)/);
-          const resultCount = match ? match[1] : 'multiple';
-          return handleError({
-            code: 'F5212',
-            resourceType,
-            searchParams: JSON.stringify(searchParams),
-            resultCount,
-            stack: err.stack || (new Error()).stack,
-            sourceError: err
-          }, this.environment);
-        }
-        return handleError({
-          code: 'F5203',
-          operation: 'resolve',
-          errorMessage: err.message || String(err),
-          stack: err.stack || (new Error()).stack,
-          sourceError: err
-        }, this.environment);
+        return handleFhirClientError(err, 'resolve', resourceTypeOrRef, params, this.environment);
       }
     },
 
@@ -251,34 +243,7 @@ function createFhirClientWrappers(getFhirClient) {
       try {
         return await client.toLiteral(resourceType, params, options);
       } catch (err) {
-        if (err.message && err.message.includes('No resources found')) {
-          return handleError({
-            code: 'F5211',
-            resourceType,
-            searchParams: JSON.stringify(params),
-            stack: err.stack || (new Error()).stack,
-            sourceError: err
-          }, this.environment);
-        }
-        if (err.message && err.message.includes('Multiple resources found')) {
-          const match = err.message.match(/\((\d+) found\)/);
-          const resultCount = match ? match[1] : 'multiple';
-          return handleError({
-            code: 'F5212',
-            resourceType,
-            searchParams: JSON.stringify(params),
-            resultCount,
-            stack: err.stack || (new Error()).stack,
-            sourceError: err
-          }, this.environment);
-        }
-        return handleError({
-          code: 'F5203',
-          operation: 'literal',
-          errorMessage: err.message || String(err),
-          stack: err.stack || (new Error()).stack,
-          sourceError: err
-        }, this.environment);
+        return handleFhirClientError(err, 'literal', resourceType, params, this.environment);
       }
     }
   };
