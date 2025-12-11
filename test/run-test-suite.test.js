@@ -26,6 +26,7 @@ import { FhirSnapshotGenerator } from "fhir-snapshot-generator";
 import skippedGroups from "./skipped-groups.js";
 import { fileURLToPath } from 'url';
 import util from 'util';
+import { MockFhirClient } from './mock-fhir-client.js';
 
 chai.use(chaiAsPromised);
 var expect = chai.expect;
@@ -69,6 +70,7 @@ datasetnames.forEach((name) => {
 // found in the test-suite directory.
 describe("Fumifier Test Suite", () => {
   var navigator;
+  var fhirClient;
   before(async function() {
     this.timeout(180000); // Set timeout to 180 seconds (3 minutes)
     const fsg = await FhirSnapshotGenerator.create({
@@ -79,6 +81,11 @@ describe("Fumifier Test Suite", () => {
     });
     // Create a FhirStructureNavigator instance using the FhirSnapshotGenerator
     navigator = new FhirStructureNavigator(fsg);
+    // Create a mock FHIR client for testing
+    fhirClient = new MockFhirClient({
+      baseUrl: 'http://mock-server/fhir',
+      fhirVersion: 'R4'
+    });
   });
 
   // Iterate over all groups of tests
@@ -144,7 +151,10 @@ describe("Fumifier Test Suite", () => {
             const expectsCode = "code" in testcase;
 
             try {
-              expr = await fumifier(testcase.expr, { navigator: testcase.noNavigator ? undefined : navigator });
+              expr = await fumifier(testcase.expr, {
+                navigator: testcase.noNavigator ? undefined : navigator,
+                fhirClient: testcase.noFhirClient ? undefined : fhirClient
+              });
 
               if ("timelimit" in testcase && "depth" in testcase) {
                 this.timeout(testcase.timelimit * 2);
