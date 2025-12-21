@@ -116,6 +116,10 @@ class FumifierError extends Error {
  */
 
 /**
+ * @typedef {import('@outburn/types').Logger} Logger
+ */
+
+/**
  * @typedef {import('@outburn/fhir-client').FhirClient} FhirClient
  */
 
@@ -133,10 +137,6 @@ class FumifierError extends Error {
  * @typedef MappingCacheInterface
  * @property {() => Promise<string[]>} getKeys - Get the list of available mapping names.
  * @property {(key: string) => Promise<string>} get - Get a mapping expression by key/name.
- */
-
-/**
- * @typedef {import('@outburn/types').Logger}
  */
 
 /**
