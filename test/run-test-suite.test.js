@@ -164,7 +164,7 @@ describe("Fumifier Test Suite", () => {
             try {
               expr = await fumifier(testcase.expr, {
                 navigator: testcase.noNavigator ? undefined : navigator,
-                terminologyRuntime: testcase.noNavigator ? undefined : terminologyRuntime,
+                terminologyRuntime: (testcase.noNavigator || testcase.noTerminology) ? undefined : terminologyRuntime,
                 fhirClient: testcase.noFhirClient ? undefined : fhirClient
               });
 

@@ -128,7 +128,7 @@ describe('Fumifier Verbose Policy Matrix (F5xxx)', () => {
           try {
             expr = await fumifier(testcase.expr ?? fs.readFileSync(path.join(__dirname, 'test-suite', 'groups', group, testcase['expr-file'] || '')).toString(), {
               navigator: testcase.noNavigator ? undefined : navigator,
-              terminologyRuntime: testcase.noNavigator ? undefined : terminologyRuntime
+              terminologyRuntime: (testcase.noNavigator || testcase.noTerminology) ? undefined : terminologyRuntime
             });
           } catch (e) {
             // If this F5 code triggers at parse time (unexpected), skip
