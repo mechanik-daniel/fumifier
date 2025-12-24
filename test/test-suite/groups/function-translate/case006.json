@@ -1,0 +1,7 @@
+{
+  "description": "translateCode missing ConceptMap returns undefined (permissive)",
+  "expr": "$translateCode('male', 'http://example.org/fhir/ConceptMap/does-not-exist')",
+  "data": { "resourceType": "Patient" },
+  "bindings": { "throwLevel": 15 },
+  "undefinedResult": true
+}

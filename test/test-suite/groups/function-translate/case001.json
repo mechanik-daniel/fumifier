@@ -1,0 +1,16 @@
+{
+  "description": "translate* happy path + unmapped warning is non-throwing (permissive)",
+  "expr": "[\n  $translate('not-a-code', 'http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v2'),\n  $translateCode('male', 'http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v2'),\n  $translateCoding('male', 'http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v2'),\n  $translate('male', 'cm-administrative-gender-v2'),\n  $translateCode('male', 'cm-administrative-gender-v2'),\n  $translateCoding('male', 'cm-administrative-gender-v2'),\n  $translate('male', 'v2.AdministrativeGender'),\n  $translateCode('male', 'v2.AdministrativeGender'),\n  $translateCoding('male', 'v2.AdministrativeGender')\n]",
+  "data": { "resourceType": "Patient" },
+  "bindings": {},
+  "result": [
+    "M",
+    { "system": "http://terminology.hl7.org/CodeSystem/v2-0001", "code": "M" },
+    "M",
+    "M",
+    { "system": "http://terminology.hl7.org/CodeSystem/v2-0001", "code": "M" },
+    "M",
+    "M",
+    { "system": "http://terminology.hl7.org/CodeSystem/v2-0001", "code": "M" }
+  ]
+}

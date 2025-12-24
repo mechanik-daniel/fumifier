@@ -1,0 +1,7 @@
+{
+  "description": "translate unmapped is undefined in permissive thresholds",
+  "expr": "$translate('not-a-code', 'http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v2')",
+  "data": { "resourceType": "Patient" },
+  "bindings": {},
+  "undefinedResult": true
+}

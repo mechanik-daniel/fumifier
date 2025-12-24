@@ -1,0 +1,11 @@
+{
+  "description": "translateCode without terminology runtime throws F5215 under strict thresholds",
+  "expr": "$translateCode('male', 'cm-administrative-gender-v2')",
+  "data": { "resourceType": "Patient" },
+  "bindings": {
+    "throwLevel": 31,
+    "validationLevel": 31
+  },
+  "noTerminology": true,
+  "code": "F5215"
+}

@@ -1,0 +1,7 @@
+{
+  "description": "translateCode missing ConceptMap throws a coded failure under strict thresholds",
+  "expr": "$translateCode('male', 'http://example.org/fhir/ConceptMap/does-not-exist')",
+  "data": { "resourceType": "Patient" },
+  "bindings": {},
+  "code": "F5214"
+}

@@ -1,0 +1,8 @@
+{
+  "description": "translateCode without terminology runtime returns undefined (permissive)",
+  "expr": "$translateCode('male', 'cm-administrative-gender-v2')",
+  "data": { "resourceType": "Patient" },
+  "bindings": { "throwLevel": 15 },
+  "noTerminology": true,
+  "undefinedResult": true
+}
