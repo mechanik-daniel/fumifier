@@ -43,7 +43,7 @@ Fumifier compiles a FLASH expression string to an executable object, then evalua
 - **Trailing Semicolons** 📝 **New in v1.7.0** – optional semicolons in inline FLASH rule assignments
 - **Assume Block** 🔄 **New in v1.3.0** – semicolon-separated expressions at root level treated as implicit blocks
 - **Dual Assignment** 🎯 **New in v1.6.0** – support for dual assignment patterns with deferred validation
-- **Decorative Fixed Values** ✨ **New in v1.5.0** – automatic injection of decorative elements with fixed values
+- **Auto-Injected Fixed Values** ✨ **New in v1.5.0** – automatic injection of safe fixed-value optional elements
 - **AST Mobility** ⭐ **New in v1.0.0** – serialize/deserialize compiled expressions as JSON
 - Async evaluation pipeline with selective short‑circuiting
 - FLASH blocks & rules lowered into native evaluator stages
@@ -481,8 +481,8 @@ InstanceOf: MyPatientProfile
 `);
 ```
 
-### Decorative Fixed Values (v1.5.0)
-Automatic injection of decorative elements (display text, units) with fixed values:
+### Auto-Injected Fixed Values (v1.5.0)
+Automatic injection of optional elements that are safe to auto-inject when they have fixed values (including both human-readable fields like display text/units, and some semantically meaningful fields that are profile-fixed). Note that mandatory elements with fixed values are always injected, this feature does the same for optional elements if they are regarded safe.
 
 ---
 ## 17. Contributing

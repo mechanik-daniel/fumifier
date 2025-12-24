@@ -18,12 +18,26 @@ import validateMandatoryChildren from '../utils/validateMandatoryChildren.js';
 // Import utility functions directly since they are simple utilities
 const { initCap } = fn;
 
-// Whitelist of decorative elements that can be safely injected if they have fixed values, even if they are optional.
-// These elements cannot change semantic meaning, only add human-readable information to their sibling properties.
-const DECORATIVE_ELEMENTS = new Set([
+// Whitelist of elements that are safe to auto-inject when they have fixed values, even if they are optional.
+// Rationale: when an element is constrained to a fixed value by the profile, injecting it cannot introduce
+// "unexpected" semantics—it's already mandated by the profile's fixed constraints.
+// (Some of these are human-readable/decorative, others are semantically meaningful but still fixed.)
+const AUTO_INJECTABLE_FIXED_VALUE_ELEMENTS = new Set([
+  'Coding.system',
+  'Coding.code',
+  'Coding.userSelected',
+  'Coding.version',
   'Coding.display',
   'CodeableConcept.text',
-  'Quantity.unit'
+  'Quantity.system',
+  'Quantity.code',
+  'Quantity.value',
+  'Quantity.comparator',
+  'Quantity.unit',
+  'Identifier.system',
+  'Identifier.value',
+  'Identifier.type',
+  'Identifier.use'
 ]);
 
 // Symbol for mandatory children tracking
@@ -131,22 +145,27 @@ class ChildValueProcessor {
       }
     }
 
-    // at this point, if we have no collected values for this element but it is mandatory or decorative,
+    // at this point, if we have no collected values for this element but it is mandatory or safe-to-auto-inject,
     // we will try to evaluate it as a virtual rule.
     if (values.length === 0) {
+      // Never attempt auto-generation for forbidden elements.
+      // A profile can explicitly forbid an element with max=0, in which case even a whitelisted base path
+      // must not trigger virtual-rule evaluation (e.g. SimpleQuantity forbids comparator).
+      if (child.max === '0') return { values };
+
       // skipping polymorphic elements, they cannot have actual values without having a specific type
       if (child.type.length > 1) return { values };
 
       if (child.min === 0) {
         // not mandatory.
-        // check if it's decorative by looking up its base path in the whitelist
-        const isDecorative = child.base?.path && DECORATIVE_ELEMENTS.has(child.base.path);
+        // check if it's safe-to-auto-inject by looking up its base path in the whitelist
+        const isAutoInjectableFixedValue = child.base?.path && AUTO_INJECTABLE_FIXED_VALUE_ELEMENTS.has(child.base.path);
 
-        // skip if not decorative
-        if (!isDecorative) return { values };
+        // skip if not safe-to-auto-inject
+        if (!isAutoInjectableFixedValue) return { values };
       }
 
-      // we are left with mandatory or decorative elements.
+      // we are left with mandatory or safe-to-auto-inject elements.
       // evaluating them as virtual rules may actually produce a value.
 
       try {
