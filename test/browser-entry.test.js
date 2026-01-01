@@ -156,6 +156,26 @@ describe('Browser Entry Point', function() {
         tokenize(123);
       }, TypeError, 'Should throw TypeError for non-string input');
     });
+
+    it('should treat / as division operator in infix position', function() {
+      const { tokenize } = browserModuleEsm;
+      const tokens = tokenize(`$a := 1 / 2;\n$a * 50`);
+
+      assert(Array.isArray(tokens), 'Should return an array');
+      assert(tokens.length > 0, 'Should return tokens (not fail on /)');
+
+      const slashToken = tokens.find(t => t.type === 'operator' && t.value === '/');
+      assert(slashToken, 'Should include / operator token (division), not treat as regex');
+    });
+
+    it('should tokenize /.../ as regex literal in prefix position', function() {
+      const { tokenize } = browserModuleEsm;
+      const tokens = tokenize('/foo/');
+
+      assert(Array.isArray(tokens), 'Should return an array');
+      assert(tokens.length > 0, 'Should return tokens');
+      assert(tokens[0].type === 'regex', 'First token should be a regex literal');
+    });
   });
 
   describe('Browser Isolation', function() {
