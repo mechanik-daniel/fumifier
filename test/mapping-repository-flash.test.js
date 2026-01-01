@@ -3,20 +3,30 @@ import fumifier from '../src/fumifier.js';
 import assert from 'assert';
 import { FhirStructureNavigator } from "@outburn/structure-navigator";
 import { FhirSnapshotGenerator } from "fhir-snapshot-generator";
+import { FhirTerminologyRuntime } from "fhir-terminology-runtime";
+import { FhirPackageExplorer } from "fhir-package-explorer";
 
 describe('Mapping Repository with FLASH Expressions', function() {
   let navigator;
+  let terminologyRuntime;
 
   before(async function() {
     this.timeout(180000); // Set timeout to 180 seconds (3 minutes)
-    const fsg = await FhirSnapshotGenerator.create({
+
+    // Create shared FhirPackageExplorer instance
+    const fpe = await FhirPackageExplorer.create({
       context: ['il.core.fhir.r4#0.17.0', 'fumifier.test.pkg#0.1.0'],
       cachePath: './test/.test-cache',
       fhirVersion: '4.0.1',
       cacheMode: 'lazy'
     });
-    // Create a FhirStructureNavigator instance using the FhirSnapshotGenerator
+
+    // Create FhirSnapshotGenerator with shared FPE
+    const fsg = await FhirSnapshotGenerator.create({ fpe, fhirVersion: '4.0.1', cacheMode: 'lazy' });
     navigator = new FhirStructureNavigator(fsg);
+
+    // Create FhirTerminologyRuntime with shared FPE
+    terminologyRuntime = await FhirTerminologyRuntime.create({ fpe });
   });
 
   describe('FLASH Expressions in Mappings', function() {
@@ -65,6 +75,7 @@ InstanceOf: Patient
       const expr = '$validatePatient($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: flashMappingCache
       });
 
@@ -81,6 +92,7 @@ InstanceOf: Patient
       const expr = '$transformPatientName($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: flashMappingCache
       });
 
@@ -101,6 +113,7 @@ InstanceOf: Patient
       const expr = '$extractIdentifier($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: flashMappingCache
       });
 
@@ -118,6 +131,7 @@ InstanceOf: Patient
       const expr = '$validateAndTransform($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: flashMappingCache
       });
 
@@ -156,6 +170,7 @@ InstanceOf: Patient
       const expr = '$formatWithPrefix($, {"prefix": "Dr"})';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: testCache
       });
 
@@ -173,6 +188,7 @@ InstanceOf: Patient
       const expr = '$nestedFlashMapping($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: flashMappingCache
       });
 
@@ -222,6 +238,7 @@ InstanceOf: Patient
       const expr = '$invalidFlashSyntax($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: errorMappingCache
       });
 
@@ -245,6 +262,7 @@ InstanceOf: Patient
       const expr = '$invalidResourceType($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: errorMappingCache
       });
 
@@ -265,6 +283,7 @@ InstanceOf: Patient
       const expr = '$validMapping($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: errorMappingCache
       });
 
@@ -350,6 +369,7 @@ InstanceOf: Patient
       const expr = '$combinedMapping($)';
       const compiled = await fumifier(expr, {
         navigator,
+        terminologyRuntime,
         mappingCache: mixedMappingCache
       });
 

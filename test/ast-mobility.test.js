@@ -3,20 +3,30 @@ import fumifier from '../src/fumifier.js';
 import assert from 'assert';
 import { FhirStructureNavigator } from "@outburn/structure-navigator";
 import { FhirSnapshotGenerator } from "fhir-snapshot-generator";
+import { FhirTerminologyRuntime } from "fhir-terminology-runtime";
+import { FhirPackageExplorer } from "fhir-package-explorer";
 
 describe('AST Mobility Feature', function() {
   let navigator;
+  let terminologyRuntime;
 
   before(async function() {
     this.timeout(180000); // Set timeout to 180 seconds (3 minutes)
-    const fsg = await FhirSnapshotGenerator.create({
+
+    // Create shared FhirPackageExplorer instance
+    const fpe = await FhirPackageExplorer.create({
       context: ['il.core.fhir.r4#0.17.0', 'fumifier.test.pkg#0.1.0'],
       cachePath: './test/.test-cache',
       fhirVersion: '4.0.1',
       cacheMode: 'lazy'
     });
-    // Create a FhirStructureNavigator instance using the FhirSnapshotGenerator
+
+    // Create FhirSnapshotGenerator with shared FPE
+    const fsg = await FhirSnapshotGenerator.create({ fpe, fhirVersion: '4.0.1', cacheMode: 'lazy' });
     navigator = new FhirStructureNavigator(fsg);
+
+    // Create FhirTerminologyRuntime with shared FPE
+    terminologyRuntime = await FhirTerminologyRuntime.create({ fpe });
   });
   it('should create fumifier object from AST JSON', async function() {
     // Create original expression
@@ -64,11 +74,11 @@ describe('AST Mobility Feature', function() {
 * gender = "male"
 * birthDate = '1980-01-01'`;
 
-    const originalExpr = await fumifier(flashExpr, { navigator });
+    const originalExpr = await fumifier(flashExpr, { navigator, terminologyRuntime });
     const originalAst = originalExpr.ast();
 
     // Create new fumifier object from AST with navigator
-    const recreatedExpr = await fumifier(originalAst, { navigator });
+    const recreatedExpr = await fumifier(originalAst, { navigator, terminologyRuntime });
 
     // Verify both are FLASH expressions (FHIR definition ordering may differ)
     const recreatedAst = recreatedExpr.ast();
@@ -107,11 +117,11 @@ describe('AST Mobility Feature', function() {
   * family = lastName
 * gender = 'other'`;
 
-    const originalExpr = await fumifier(flashExpr, { navigator });
+    const originalExpr = await fumifier(flashExpr, { navigator, terminologyRuntime });
     const originalAst = originalExpr.ast();
 
     // Create new fumifier object from AST with navigator
-    const recreatedExpr = await fumifier(originalAst, { navigator });
+    const recreatedExpr = await fumifier(originalAst, { navigator, terminologyRuntime });
 
     // Verify both are FLASH expressions (FHIR definition ordering may differ)
     const recreatedAst = recreatedExpr.ast();
@@ -267,7 +277,7 @@ describe('AST Mobility Feature', function() {
   * family = "Mobility"
 * gender = "unknown"`;
 
-    const originalExpr = await fumifier(flashExpr, { navigator });
+    const originalExpr = await fumifier(flashExpr, { navigator, terminologyRuntime });
     const originalAst = originalExpr.ast();
 
     // Verify that normalizedRootPackages was populated during compilation
@@ -290,7 +300,7 @@ describe('AST Mobility Feature', function() {
       'normalizedRootPackages should be preserved during JSON serialization/deserialization');
 
     // Create new fumifier object from deserialized AST with navigator
-    const recreatedExpr = await fumifier(deserializedAst, { navigator });
+    const recreatedExpr = await fumifier(deserializedAst, { navigator, terminologyRuntime });
     const recreatedAst = recreatedExpr.ast();
 
     // Verify normalizedRootPackages is preserved after recreation
@@ -315,7 +325,7 @@ describe('AST Mobility Feature', function() {
     assert.ok(!regularAst.normalizedRootPackages, 'normalizedRootPackages should not be populated for non-FLASH expressions');
 
     // Even with navigator provided, non-FLASH expressions shouldn't get normalized packages
-    const regularExprWithNav = await fumifier('$.name & " processed"', { navigator });
+    const regularExprWithNav = await fumifier('$.name & " processed"', { navigator, terminologyRuntime });
     const regularAstWithNav = regularExprWithNav.ast();
 
     assert.ok(!regularAstWithNav.normalizedRootPackages, 'normalizedRootPackages should not be populated for non-FLASH expressions even with navigator');

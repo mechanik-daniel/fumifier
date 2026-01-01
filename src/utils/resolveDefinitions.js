@@ -71,6 +71,7 @@ function handleRecoverableError(base, positions, recover, errors, errObj) {
  * if the expression has FLASH it will be flagged as such and passed here for FHIR definition resolution and processing.
  * @param {Object} expr - Parsed Fumifier expression
  * @param {FhirStructureNavigator} navigator - FHIR structure navigator
+ * @param {FhirTerminologyRuntime} terminologyRuntime - FHIR terminology runtime for valueset expansions
  * @param {boolean} recover - If true, will continue processing and collect errors instead of throwing them.
  * @param {Array} errors - Array to collect errors if recover is true
  * @param {Object} compiledRegexCache - Cache for compiled FHIR regexes
@@ -83,7 +84,7 @@ function handleRecoverableError(base, positions, recover, errors, errObj) {
  *   - resolvedValueSetExpansions: ValueSet expansion cache
  *   - normalizedRootPackages: Array of normalized root package contexts from FPE (for AST mobility)
  */
-const resolveDefinitions = async function (expr, navigator, recover, errors, compiledRegexCache) {
+const resolveDefinitions = async function (expr, navigator, terminologyRuntime, recover, errors, compiledRegexCache) {
   if (!expr || !expr.containsFlash) return expr;
   // create utilities for fetching FHIR definitions
   const {
@@ -91,8 +92,9 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
     getBaseTypeMeta,
     getElement,
     getChildren,
+    getValueSetExpansionCount,
     expandValueSet
-  } = createFhirFetchers(navigator);
+  } = createFhirFetchers(navigator, terminologyRuntime);
 
   // Initialize containers for resolved definitions
   // ============================================================
@@ -194,6 +196,10 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
       };
       if (!sourcePackage.id || !sourcePackage.version) return; // cannot scope expansion properly
 
+      // Persist binding context for runtime membership checks during evaluation
+      ed.__vsUrl = vsUrl;
+      ed.__vsSourcePackage = sourcePackage;
+
       const trackerKey = `${sourcePackage.id}@${sourcePackage.version}::${vsUrl}`;
       if (valueSetExpansionTracker[trackerKey]) {
         // Reuse previous outcome
@@ -207,27 +213,35 @@ const resolveDefinitions = async function (expr, navigator, recover, errors, com
       let mode = 'error';
       let vsRefKey;
       try {
-        const vs = await expandValueSet(vsUrl, sourcePackage); // may throw
-        if (vs && vs.expansion) {
-          // Determine size
-          let count = vs.expansion.count;
-          if (typeof count !== 'number') {
-            const containsCount = Array.isArray(vs.expansion.contains) ? vs.expansion.contains.length : 0;
-            count = containsCount;
-          }
-          const pkgId = vs.__packageId || sourcePackage.id;
-          const pkgVersion = vs.__packageVersion || sourcePackage.version;
-          const filename = vs.__filename || vs.id || vs.url || vsUrl;
-          vsRefKey = `${pkgId}@${pkgVersion}::${filename}`;
-          if (count <= 300) {
-            const transformed = transformExpansion(vs.expansion);
-            resolvedValueSetExpansions[vsRefKey] = transformed;
-            mode = 'full';
+        // Count-first: avoid loading full expansions for large ValueSets
+        let countResult;
+        try {
+          countResult = await getValueSetExpansionCount(vsUrl, sourcePackage);
+        } catch {
+          countResult = undefined;
+        }
+
+        if (countResult && countResult.status === 'ok' && typeof countResult.count === 'number') {
+          if (countResult.count <= 20) {
+            const vs = await expandValueSet(vsUrl, sourcePackage); // may throw
+            if (vs && vs.expansion) {
+              const pkgId = vs.__packageId || sourcePackage.id;
+              const pkgVersion = vs.__packageVersion || sourcePackage.version;
+              const filename = vs.__filename || vs.id || vs.url || vsUrl;
+              vsRefKey = `${pkgId}@${pkgVersion}::${filename}`;
+              const transformed = transformExpansion(vs.expansion);
+              resolvedValueSetExpansions[vsRefKey] = transformed;
+              mode = 'full';
+            } else {
+              mode = 'error';
+            }
           } else {
-            mode = 'lazy'; // too big to embed fully
+            mode = 'lazy'; // not embedded; will be checked at runtime via inValueSet
           }
         } else {
-          mode = 'error';
+          // Unknown count (unexpandable/unknown ValueSet) -> do not expand eagerly
+          // Keep as lazy so runtime can attempt membership checks; validation will fall back to expansion error if runtime can't.
+          mode = 'lazy';
         }
       } catch {
         mode = 'error';

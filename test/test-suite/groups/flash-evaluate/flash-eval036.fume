@@ -2,6 +2,6 @@ InstanceOf: Patient
 * communication
   * language
     * coding
-      * system = 'http://acme.org.il/code/lang'
+      * system = 'urn:ietf:bcp:47'
       * code = 'fr'
     * coding

@@ -10,8 +10,9 @@
         "language": {
           "coding": [
             {
-              "system": "http://acme.org.il/code/lang",
-              "code": "fr"
+              "system": "urn:ietf:bcp:47",
+              "code": "fr",
+              "display": "French"
             }
           ]
         }

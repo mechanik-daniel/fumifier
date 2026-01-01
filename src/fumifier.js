@@ -36,6 +36,7 @@ import registerNativeFn from './utils/registerNativeFn.js';
 import createFlashEvaluator from './flashEvaluator.js';
 import { createDefaultLogger, SYM, decide, push, thresholds, severityFromCode, LEVELS } from './utils/diagnostics.js';
 import createFhirClientWrappers from './utils/fhirClientWrappers.js';
+import createTerminologyWrappers from './utils/terminologyWrappers.js';
 
 /**
  * FumifierError class - represents errors thrown by Fumifier during parsing or evaluation
@@ -116,7 +117,15 @@ class FumifierError extends Error {
  */
 
 /**
+ * @typedef {import('@outburn/types').Logger} Logger
+ */
+
+/**
  * @typedef {import('@outburn/fhir-client').FhirClient} FhirClient
+ */
+
+/**
+ * @typedef {import('fhir-terminology-runtime').FhirTerminologyRuntime} FhirTerminologyRuntime
  */
 
 /**
@@ -132,27 +141,20 @@ class FumifierError extends Error {
  */
 
 /**
- * @typedef LoggerInterface
- * @property {Function} debug - Log debug messages
- * @property {Function} info - Log info messages
- * @property {Function} warn - Log warning messages
- * @property {Function} error - Log error messages
- */
-
-/**
  * @typedef FumifierOptions
  * @property {boolean} [recover] Attempt to recover on parse error.
  * @property {FhirStructureNavigator} [navigator] FHIR structure navigator used to resolve FLASH constructs.
+ * @property {FhirTerminologyRuntime} [terminologyRuntime] FHIR terminology runtime used for valueset expansions.
  * @property {AstCacheInterface} [astCache] Optional AST cache implementation for parsed expressions. Defaults to shared LRU cache.
  * @property {MappingCacheInterface} [mappingCache] Optional mapping repository for named expressions.
- * @property {LoggerInterface} [logger] Optional logger implementation. Defaults to console-based logger.
+ * @property {Logger} [logger] Optional logger implementation. Defaults to console-based logger.
  * @property {FhirClient} [fhirClient] Optional FHIR client for server operations.
  * @property {Record<string, any>} [bindings] Optional variable/function bindings (no signature support for functions).
  */
 
 /**
  * @typedef RuntimeOptions
- * @property {LoggerInterface} [logger] Override logger for this evaluation only.
+ * @property {Logger} [logger] Override logger for this evaluation only.
  * @property {FhirClient} [fhirClient] Override FHIR client for this evaluation only.
  * @property {MappingCacheInterface} [mappingCache] Override mapping cache for this evaluation only.
  */
@@ -166,7 +168,7 @@ class FumifierError extends Error {
  * @property {(name: string | symbol, value: any) => void} assign Assign a value to a variable in the compilation scope.
  * @property {(name: string, implementation: (this: {environment:any, input:any}, ...args: any[]) => any, signature?: string) => void} registerFunction
  *   Register a custom function available to the expression. Optional JSONata signature string is supported.
- * @property {(newLogger: LoggerInterface) => void} setLogger
+ * @property {(newLogger: Logger) => void} setLogger
  *   Set a logger implementation; defaults to console-based logger.
  * @property {(cache: MappingCacheInterface) => void} setMappingCache
  *   Set a mapping cache implementation.
@@ -2003,13 +2005,14 @@ var fumifier = (function() {
    * @param {string} expr - The expression string to parse
    * @param {boolean} recover - Whether to use recovery mode parsing
    * @param {Object} navigator - FHIR navigator for FLASH processing
+   * @param {Object} terminologyRuntime - FHIR terminology runtime for valueset expansions
    * @param {AstCacheInterface} astCacheImpl - AST cache implementation
    * @param {Object} compiledFhirRegex - Compiled regex cache object
    * @param {string} errorContextCode - Error code context for wrapping parse errors
    * @param {boolean} [isFactoryContext=false] - Whether this is called from the main factory (affects error handling)
    * @returns {Promise<Object>} Parsed and potentially resolved AST
    */
-  async function parseAndCacheExpression(expr, recover, navigator, astCacheImpl, compiledFhirRegex, errorContextCode = 'D3120', isFactoryContext = false) {
+  async function parseAndCacheExpression(expr, recover, navigator, terminologyRuntime, astCacheImpl, compiledFhirRegex, errorContextCode = 'D3120', isFactoryContext = false) {
     let ast;
 
     try {
@@ -2057,7 +2060,7 @@ var fumifier = (function() {
             } else {
               // Resolve FHIR definitions
               const errors = recover ? parsedAst.errors : []; // collect errors if in recover mode
-              const resolvedAst = await resolveDefinitions(parsedAst, navigator, recover, errors, compiledFhirRegex);
+              const resolvedAst = await resolveDefinitions(parsedAst, navigator, terminologyRuntime, recover, errors, compiledFhirRegex);
 
               // Cache the resolved AST
               try {
@@ -2191,13 +2194,14 @@ var fumifier = (function() {
 
     const env = this.environment;
     const navigator = env && env.lookup(Symbol.for('fumifier.__navigator'));
+    const terminologyRuntime = env && env.lookup(Symbol.for('fumifier.__terminologyRuntime'));
     const astCacheImpl = env && env.lookup(Symbol.for('fumifier.__astCacheImpl')) || new AstCacheImpl(getDefaultCache());
     const compiledFhirRegex = env && env.lookup(Symbol.for('fumifier.__compiledFhirRegex_OBJ'));
 
     let ast;
     try {
       // Parse and cache the expression (Note: $eval always uses recover=false)
-      ast = await parseAndCacheExpression(expr, false, navigator, astCacheImpl, compiledFhirRegex, "D3120");
+      ast = await parseAndCacheExpression(expr, false, navigator, terminologyRuntime, astCacheImpl, compiledFhirRegex, "D3120");
     } catch(err) {
       // error parsing the expression (or resolving FLASH definitions) passed to $eval
       populateMessage(err, this.environment);
@@ -2292,12 +2296,13 @@ var fumifier = (function() {
 
       // Parse and cache the mapping expression (Note: mappings always use recover=false like $eval)
       const navigator = evalEnv && evalEnv.lookup(Symbol.for('fumifier.__navigator'));
+      const terminologyRuntime = evalEnv && evalEnv.lookup(Symbol.for('fumifier.__terminologyRuntime'));
       const astCacheImpl = evalEnv && evalEnv.lookup(Symbol.for('fumifier.__astCacheImpl')) || new AstCacheImpl(getDefaultCache());
       const compiledFhirRegex = evalEnv && evalEnv.lookup(Symbol.for('fumifier.__compiledFhirRegex_OBJ'));
 
       let ast;
       try {
-        ast = await parseAndCacheExpression(expr, false, navigator, astCacheImpl, compiledFhirRegex, "F3002");
+        ast = await parseAndCacheExpression(expr, false, navigator, terminologyRuntime, astCacheImpl, compiledFhirRegex, "F3002");
       } catch(parseError) {
         // error parsing the mapping expression - customize error format for mapping context
         populateMessage(parseError.error || parseError, this.environment);
@@ -2437,6 +2442,22 @@ var fumifier = (function() {
   }
 
   /**
+   * Binds terminology runtime wrapper functions to the environment.
+   * These are always bound and will throw meaningful errors when the terminology runtime is missing.
+   * @param {Object} env - The environment to bind terminology functions to
+   */
+  function bindTerminologyFunctions(env) {
+    const getTerminologyRuntime = (environment) => environment.lookup(Symbol.for('fumifier.__terminologyRuntime'));
+    const wrappers = createTerminologyWrappers(getTerminologyRuntime);
+
+    env.bind('inValueSet', defineFunction(wrappers.inValueSet, '<x-so?:o>'));
+    env.bind('expandValueSet', defineFunction(wrappers.expandValueSet, '<s-o?:o>'));
+    env.bind('translateCode', defineFunction(wrappers.translateCode, '<x-so?:x>'));
+    env.bind('translateCoding', defineFunction(wrappers.translateCoding, '<x-so?:x>'));
+    env.bind('translate', defineFunction(wrappers.translate, '<x-so?:x>'));
+  }
+
+  /**
      * Fumifier
      * @param {string|Object} expr - FUME mapping expression as text, or pre-parsed AST object
      * @param {FumifierOptions} [options]
@@ -2445,6 +2466,7 @@ var fumifier = (function() {
   async function fumifier(expr, options) {
     var ast;
     var navigator = options && options.navigator;
+    var terminologyRuntime = options && options.terminologyRuntime;
     var recover = options && options.recover;
     var mappingCache = options && options.mappingCache;
     var logger = options && options.logger;
@@ -2458,7 +2480,7 @@ var fumifier = (function() {
     try {
       if (typeof expr === 'string') {
         // Use common parsing logic for string expressions
-        ast = await parseAndCacheExpression(expr, recover, navigator, astCacheImpl, compiledFhirRegex, 'S0500', true);
+        ast = await parseAndCacheExpression(expr, recover, navigator, terminologyRuntime, astCacheImpl, compiledFhirRegex, 'S0500', true);
       } else if (typeof expr === 'object' && expr !== null) {
         // Assume it's a pre-parsed AST object
         if (!Object.prototype.hasOwnProperty.call(expr, 'type')) {
@@ -2493,7 +2515,7 @@ var fumifier = (function() {
           }
         } else if (!isAlreadyResolved) {
           // Only resolve FHIR definitions if not already resolved
-          ast = await resolveDefinitions(ast, navigator, recover, ast.errors, compiledFhirRegex);
+          ast = await resolveDefinitions(ast, navigator, terminologyRuntime, recover, ast.errors, compiledFhirRegex);
         }
         // If already resolved, we can skip resolution and proceed directly to evaluation
       }
@@ -2526,6 +2548,9 @@ var fumifier = (function() {
     }
     // Always bind FHIR client wrapper functions (they check for client internally)
     bindFhirClientFunctions(environment);
+
+    // Always bind terminology wrapper functions (they check for runtime internally)
+    bindTerminologyFunctions(environment);
 
     // Apply bindings from compilation options if provided
     if (bindings && typeof bindings === 'object') {
@@ -2561,8 +2586,9 @@ var fumifier = (function() {
       return compiled;
     });
 
-    // Expose navigator, compiled regex cache, AST cache implementation, and mapping cache to inner $eval() via environment lookup
+    // Expose navigator, terminologyRuntime, compiled regex cache, AST cache implementation, and mapping cache to inner $eval() via environment lookup
     environment.bind(Symbol.for('fumifier.__navigator'), navigator);
+    environment.bind(Symbol.for('fumifier.__terminologyRuntime'), terminologyRuntime);
     environment.bind(Symbol.for('fumifier.__compiledFhirRegex_OBJ'), compiledFhirRegex);
     environment.bind(Symbol.for('fumifier.__astCacheImpl'), astCacheImpl);
     environment.bind(Symbol.for('fumifier.__mappingCache'), mappingCache);

@@ -1,0 +1,10 @@
+{
+  "description": "translate unmapped throws F5321 under strict thresholds",
+  "expr": "$translate('not-a-code', 'http://hl7.org/fhir/ConceptMap/cm-administrative-gender-v2')",
+  "data": { "resourceType": "Patient" },
+  "bindings": {
+    "throwLevel": 33,
+    "validationLevel": 33
+  },
+  "code": "F5321"
+}
