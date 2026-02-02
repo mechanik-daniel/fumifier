@@ -19,7 +19,7 @@ License: See the LICENSE file included with this package for the terms that appl
 import fs from "fs";
 import path from "path";
 import fumifier from '../dist/index.mjs';
-import chai from "chai";
+import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { FhirStructureNavigator } from "@outburn/structure-navigator";
 import { FhirSnapshotGenerator } from "fhir-snapshot-generator";
@@ -30,8 +30,8 @@ import { fileURLToPath } from 'url';
 import util from 'util';
 import { MockFhirClient } from './mock-fhir-client.js';
 
-chai.use(chaiAsPromised);
-var expect = chai.expect;
+const { expect, use } = chai;
+use(chaiAsPromised);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

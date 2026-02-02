@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import fumifier from '../dist/index.mjs';
-import chai from 'chai';
+import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { FhirStructureNavigator } from '@outburn/structure-navigator';
 import { FhirSnapshotGenerator } from 'fhir-snapshot-generator';
@@ -12,8 +12,8 @@ import { FhirPackageExplorer } from 'fhir-package-explorer';
 import { fileURLToPath } from 'url';
 import { LEVELS, severityFromCode } from '../src/utils/diagnostics.js';
 
-chai.use(chaiAsPromised);
-const expect = chai.expect;
+const { expect, use } = chai;
+use(chaiAsPromised);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,9 +1,9 @@
 import fumifier from '../dist/index.mjs';
-import chai from 'chai';
+import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-const expect = chai.expect;
-chai.use(chaiAsPromised);
+const { expect, use } = chai;
+use(chaiAsPromised);
 
 describe('$first HOF', function() {
   it('returns undefined on undefined input', async function() {

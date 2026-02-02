@@ -1,11 +1,11 @@
 import fumifier from '../dist/index.mjs';
 import fetch from 'node-fetch';
-import chai from 'chai';
+import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-var expect = chai.expect;
+const { expect, use } = chai;
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 const fumifierWithCallback = async function(expr, data, bindings) {
   return expr.evaluate(data, bindings);
