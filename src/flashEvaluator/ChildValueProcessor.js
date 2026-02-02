@@ -230,7 +230,7 @@ class ChildValueProcessor {
       child.type.find(type => name.endsWith(initCap(type.code))).__kind;
 
     // if the parent pattern has a value for this name, we will use it
-    if (parentPatternValue && parentPatternValue.value && parentPatternValue.value[name] && typeof parentPatternValue.value[name] !== undefined) {
+    if (parentPatternValue && parentPatternValue.value && parentPatternValue.value[name] !== undefined) {
       const patternValue = parentPatternValue.value[name];
 
       // For primitive types, if the pattern value is a raw string, wrap it in proper FHIR primitive structure

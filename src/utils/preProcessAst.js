@@ -5,8 +5,8 @@ Project: Fumifier (part of the FUME open-source initiative)
 License: See the LICENSE file included with this package for the terms that apply to this distribution.
 */
 
-/* eslint-disable no-console */
-/* eslint-disable valid-jsdoc */
+
+
 
 /**
  * Recursively preprocesses a raw AST node and transforms flash-specific constructs

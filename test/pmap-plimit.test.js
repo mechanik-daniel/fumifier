@@ -1,9 +1,9 @@
 import fumifier from '../dist/index.mjs';
-import chai from 'chai';
+import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-const expect = chai.expect;
-chai.use(chaiAsPromised);
+const { expect, use } = chai;
+use(chaiAsPromised);
 
 describe('$pMap and $pLimit', function() {
   it('$pMap maps over single value as array', async function() {

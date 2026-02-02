@@ -1,8 +1,6 @@
 import fumifier from '../dist/index.mjs';
 import assert from 'assert';
-import chai from 'chai';
-
-var expect = chai.expect;
+import { expect } from 'chai';
 
 describe('Invoke parser with valid expression', function() {
   describe('Account.Order[0]', function() {

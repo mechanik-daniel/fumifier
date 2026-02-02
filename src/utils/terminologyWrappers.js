@@ -5,13 +5,18 @@ Project: Fumifier (part of the FUME open-source initiative)
 License: See the LICENSE file included with this package for the terms that apply to this distribution.
 */
 
-/* eslint-disable require-jsdoc */
-/* eslint-disable valid-jsdoc */
+
 
 import createPolicy from './policy.js';
 import { populateMessage } from './errorCodes.js';
 
+/**
+ *
+ */
 function createTerminologyWrappers(getTerminologyRuntime) {
+  /**
+   *
+   */
   function handleError(err, environment) {
     try { populateMessage(err); } catch (_) { /* ignore */ }
     const policy = createPolicy(environment);
@@ -21,6 +26,9 @@ function createTerminologyWrappers(getTerminologyRuntime) {
     return undefined;
   }
 
+  /**
+   *
+   */
   function normalizeErrorMessage(e) {
     if (!e) return 'Unknown error';
     if (typeof e === 'string') return e;
@@ -28,6 +36,9 @@ function createTerminologyWrappers(getTerminologyRuntime) {
     try { return JSON.stringify(e); } catch (_) { return String(e); }
   }
 
+  /**
+   *
+   */
   function stringifyCodeOrCoding(codeOrCoding) {
     if (typeof codeOrCoding === 'string') return codeOrCoding;
     if (!codeOrCoding || typeof codeOrCoding !== 'object') return String(codeOrCoding);
@@ -39,6 +50,9 @@ function createTerminologyWrappers(getTerminologyRuntime) {
     try { return JSON.stringify(codeOrCoding); } catch (_) { return String(codeOrCoding); }
   }
 
+  /**
+   *
+   */
   function getRuntimeOrThrow(environment, operationName) {
     const runtime = getTerminologyRuntime(environment);
     if (!runtime) {
@@ -51,6 +65,9 @@ function createTerminologyWrappers(getTerminologyRuntime) {
     return runtime;
   }
 
+  /**
+   *
+   */
   function toCodingLike(target) {
     if (!target || typeof target !== 'object') return undefined;
     const { system, code, display, version } = target;
@@ -61,15 +78,24 @@ function createTerminologyWrappers(getTerminologyRuntime) {
     return coding;
   }
 
+  /**
+   *
+   */
   function maybeCollapseArray(items) {
     if (!Array.isArray(items) || items.length === 0) return undefined;
     return items.length === 1 ? items[0] : items;
   }
 
+  /**
+   *
+   */
   function isSuccessfulConceptMapTranslationResult(result) {
     return !!result && result.status === 'mapped';
   }
 
+  /**
+   *
+   */
   async function translateConceptMapSafe(environment, codeOrCoding, conceptMapKey, packageFilter) {
     const runtime = getRuntimeOrThrow(environment, 'translateConceptMap');
     if (!runtime) return undefined;

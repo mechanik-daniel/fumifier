@@ -6,7 +6,7 @@ License: See the LICENSE file included with this package for the terms that appl
 */
 
 /* eslint-disable no-console */
-/* eslint-disable valid-jsdoc */
+
 // Diagnostics infrastructure for FLASH (F5xxx policy-governed) and user logging
 // Lower value = more critical. Supports decimal severities.
 

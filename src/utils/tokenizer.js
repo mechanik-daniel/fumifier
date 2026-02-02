@@ -8,7 +8,7 @@ See NOTICE and LICENSES/MIT-JSONata.txt for details.
 
 License: See the LICENSE file included with this package for the terms that apply to this distribution.
 */
-/* eslint-disable valid-jsdoc */
+
 import escapes from './escapes.js';
 import operators from './operators.js';
 

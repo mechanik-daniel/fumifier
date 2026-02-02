@@ -5,7 +5,7 @@ Project: Fumifier (part of the FUME open-source initiative)
 License: See the LICENSE file included with this package for the terms that apply to this distribution.
 */
 
-/* eslint-disable no-console */
+
 // Centralized policy utilities for validation inhibition, logging, collection, and throw decision
 // This wraps diagnostics.js and errorCodes.js into a tiny API consumable by call sites.
 

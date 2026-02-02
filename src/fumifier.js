@@ -1,7 +1,6 @@
-/* eslint-disable no-console */
+
 /* eslint-disable no-prototype-builtins */
-/* eslint-disable require-jsdoc */
-/* eslint-disable valid-jsdoc */
+
 /*
 Copyright (c) 2025 Outburn Ltd.
 Project: Fumifier (part of the FUME open-source initiative)
@@ -181,6 +180,9 @@ class FumifierError extends Error {
 var fumifier = (function() {
 
   // Create frame
+  /**
+   *
+   */
   function createFrame(enclosingEnvironment) {
     var bindings = {};
     const newFrame = {
@@ -483,6 +485,9 @@ var fumifier = (function() {
     return resultSequence;
   }
 
+  /**
+   *
+   */
   function createFrameFromTuple(environment, tuple) {
     var frame = createFrame(environment);
     for(const prop in tuple) {
@@ -545,6 +550,9 @@ var fumifier = (function() {
     return resultSequence;
   }
 
+  /**
+   *
+   */
   async function evaluateStages(stages, input, environment) {
     var result = input;
     for(var ss = 0; ss < stages.length; ss++) {
@@ -1171,6 +1179,9 @@ var fumifier = (function() {
     return result;
   }
 
+  /**
+   *
+   */
   function reduceTupleStream(tupleStream) {
     if(!Array.isArray(tupleStream)) {
       return tupleStream;

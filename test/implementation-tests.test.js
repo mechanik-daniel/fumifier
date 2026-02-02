@@ -9,10 +9,10 @@
  */
 
 import fumifier from '../dist/index.mjs';
-import chai from "chai";
+import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
-var expect = chai.expect;
+const { expect, use } = chai;
+use(chaiAsPromised);
 
 var testdata1 = {
   "foo": {

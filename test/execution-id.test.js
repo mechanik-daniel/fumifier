@@ -6,9 +6,7 @@ License: See the LICENSE file included with this package for the terms that appl
 */
 
 import fumifier from '../dist/index.mjs';
-import chai from 'chai';
-
-var expect = chai.expect;
+import { expect } from 'chai';
 
 describe('ExecutionId Feature', () => {
   it('should expose $executionId in user expressions', async () => {

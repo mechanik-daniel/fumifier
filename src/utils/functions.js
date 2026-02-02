@@ -572,7 +572,7 @@ const functions = (() => {
      * @returns {object} - structure that represents the match(es)
      */
   async function evaluateMatcher(matcher, str) {
-    var result = matcher.apply(this, [str]); // eslint-disable-line no-useless-call
+    var result = matcher.apply(this, [str]);
     if(isPromise(result)) {
       result = await result;
     }
