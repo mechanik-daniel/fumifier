@@ -9,8 +9,8 @@ See NOTICE and LICENSES/MIT-JSONata.txt for details.
 License: See the LICENSE file included with this package for the terms that apply to this distribution.
 */
 
-/* eslint-disable require-jsdoc */
-/* eslint-disable no-console */
+
+
 import validateFhirTypeId from './validateFhirTypeId.js';
 import resolveAncestry from './resolveAncestry.js';
 import pushAncestry from './pushAncestry.js';
@@ -25,6 +25,9 @@ import preProcessAst from './preProcessAst.js';
 // converting them to arrays of steps which in turn may contain arrays of predicates.
 // following this, nodes containing '.' and '[' should be eliminated from the AST.
 
+/**
+ *
+ */
 function processAstWrapper(ast, recover, errors) {
   var containsFlash = false; // track if the AST contains any flash syntax
 

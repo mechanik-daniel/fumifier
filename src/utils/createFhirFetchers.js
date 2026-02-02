@@ -5,7 +5,7 @@ Project: Fumifier (part of the FUME open-source initiative)
 License: See the LICENSE file included with this package for the terms that apply to this distribution.
 */
 
-/* eslint-disable require-jsdoc */
+
 /** Takes a FHIR Structure Navigator and FHIR Terminology Runtime and returns helper functions used to fetch FHIR semantic data
  * @param {FhirStructureNavigator} navigator - FHIR structure navigator
  * @param {FhirTerminologyRuntime} terminologyRuntime - FHIR terminology runtime for valueset expansions
@@ -15,6 +15,9 @@ License: See the LICENSE file included with this package for the terms that appl
  * @property {Function} getTypeMeta - Function to fetch metadata of type or profile definitions
  */
 
+/**
+ *
+ */
 function createFhirFetchers(navigator, terminologyRuntime) {
   return {
     getElement: async function (snapshotId, path) {

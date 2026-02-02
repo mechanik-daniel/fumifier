@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+
 /*
 Copyright (c) 2025 Outburn Ltd.
 Project: Fumifier (part of the FUME open-source initiative)

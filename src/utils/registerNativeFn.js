@@ -9,7 +9,7 @@ See NOTICE and LICENSES/MIT-JSONata.txt for details.
 License: See the LICENSE file included with this package for the terms that apply to this distribution.
 */
 
-/* eslint-disable require-jsdoc */
+
 import fn from './functions.js';
 import datetime from './datetime.js';
 import defineFunction from './defineFunction.js';
@@ -29,6 +29,9 @@ function functionClone(arg) {
 }
 
 // Function registration
+/**
+ *
+ */
 function registerNativeFn(staticFrame, functionEval) {
   // Registering native functions with their signatures
   staticFrame.bind('sum', defineFunction(fn.sum, '<a<n>:n>'));

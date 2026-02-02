@@ -5,9 +5,9 @@ Project: Fumifier (part of the FUME open-source initiative)
 License: See the LICENSE file included with this package for the terms that apply to this distribution.
 */
 
-/* eslint-disable strict */
-/* eslint-disable require-jsdoc */
-/* eslint-disable no-console */
+
+
+
 /**
  * © Copyright Outburn Ltd. 2022-2024 All Rights Reserved
  *   Project name: FUME-COMMUNITY
@@ -63,6 +63,9 @@ var unchainFlashRule = function (ast, parentFullPath = "") {
   };
 
   // Helper function to construct `value` from `name` and `slices`
+  /**
+   *
+   */
   function constructValue(step) {
     let sliceString = step.slices && step.slices.length > 0 ?
       step.slices.map(slice => `[${slice.value}]`).join("") :

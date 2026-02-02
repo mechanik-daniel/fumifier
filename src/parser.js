@@ -1,4 +1,4 @@
-/* eslint-disable valid-jsdoc */
+
 
 /*
 Copyright (c) 2025 Outburn Ltd.
