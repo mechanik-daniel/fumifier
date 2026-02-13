@@ -2125,7 +2125,7 @@ var fumifier = (function() {
     // This also makes concurrent evaluations on the same compiled object safe.
     const exec_env = createFrame(baseEnvironment);
 
-    // Always create a fresh frame; only apply bindings when a non-empty bindings object is provided.
+    // Only apply **local** bindings when a non-empty bindings object is provided on evaluation.
     if (bindings && typeof bindings === 'object' && !Array.isArray(bindings) && Object.keys(bindings).length > 0) {
       for (const key in bindings) {
         exec_env.bind(key, bindings[key]);
