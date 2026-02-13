@@ -2121,16 +2121,15 @@ var fumifier = (function() {
    * @returns {Promise<Object>} Prepared evaluation environment
    */
   async function setupEvaluationEnvironment(baseEnvironment, bindings, input, mappingCache, setupTimestamp = true) {
-    let exec_env;
+    // Always create a fresh frame so evaluation never mutates the compiled base environment.
+    // This also makes concurrent evaluations on the same compiled object safe.
+    const exec_env = createFrame(baseEnvironment);
 
-    if (typeof bindings !== 'undefined' && bindings !== null) {
-      // Create a new frame with the provided bindings
-      exec_env = createFrame(baseEnvironment);
+    // Treat an empty bindings object ({}) as if it were null/undefined.
+    if (bindings && typeof bindings === 'object' && !Array.isArray(bindings) && Object.keys(bindings).length > 0) {
       for (const key in bindings) {
         exec_env.bind(key, bindings[key]);
       }
-    } else {
-      exec_env = baseEnvironment;
     }
 
     // Set up execution context
@@ -2572,15 +2571,16 @@ var fumifier = (function() {
       }
     }
 
-    var timestamp = new Date(); // will be overridden on each call to evaluate()
-    var executionId = utils.generateUuid(); // will be overridden on each call to evaluate()
+    // Date/time functions must be per-evaluation: they read the fixed timestamp
+    // from the current evaluation environment.
     environment.bind('now', defineFunction(function(picture, timezone) {
-      return datetime.fromMillis(timestamp.getTime(), picture, timezone);
+      const ts = (this.environment && this.environment.timestamp) ? this.environment.timestamp : new Date();
+      return datetime.fromMillis(ts.getTime(), picture, timezone);
     }, '<s?s?:s>'));
     environment.bind('millis', defineFunction(function() {
-      return timestamp.getTime();
+      const ts = (this.environment && this.environment.timestamp) ? this.environment.timestamp : new Date();
+      return ts.getTime();
     }, '<:n>'));
-    environment.bind('executionId', executionId);
 
     // bind a GETTER for compiled FHIR regexes
     environment.bind(Symbol.for('fumifier.__compiledFhirRegex_GET'), function(regexStr) {
@@ -2642,8 +2642,8 @@ var fumifier = (function() {
           // Determine which mappingCache to use (runtime override or compilation default)
           const effectiveMappingCache = (runtimeOptions && runtimeOptions.mappingCache) || mappingCache;
 
-          // Setup evaluation environment with common logic, but preserve original timestamp behavior
-          exec_env = await setupEvaluationEnvironment(environment, bindings, input, effectiveMappingCache, false);
+          // Setup a fresh, per-call evaluation environment (timestamp/executionId included)
+          exec_env = await setupEvaluationEnvironment(environment, bindings, input, effectiveMappingCache, true);
 
           // Apply runtime overrides if provided
           if (runtimeOptions) {
@@ -2656,14 +2656,6 @@ var fumifier = (function() {
               bindFhirClientFunctions(exec_env);
             }
           }
-
-          // capture the timestamp and executionId for this execution
-          // the $now() and $millis() functions will return these values, $executionId is available as a variable
-          timestamp = new Date();
-          executionId = utils.generateUuid();
-          exec_env.timestamp = timestamp; // ensure date/time utils can access a fixed reference time
-          exec_env.executionId = executionId; // ensure tracing can access the execution ID
-          exec_env.bind('executionId', executionId);
 
           // fresh diagnostics bag per call
           exec_env.bind(SYM.diagnostics, { error: [], warning: [], debug: [] });
@@ -2690,8 +2682,8 @@ var fumifier = (function() {
         // Determine which mappingCache to use (runtime override or compilation default)
         const effectiveMappingCache = (runtimeOptions && runtimeOptions.mappingCache) || mappingCache;
 
-        // Setup evaluation environment with common logic, but preserve original timestamp behavior
-        var exec_env = await setupEvaluationEnvironment(environment, bindings, input, effectiveMappingCache, false);
+        // Setup a fresh, per-call evaluation environment (timestamp/executionId included)
+        var exec_env = await setupEvaluationEnvironment(environment, bindings, input, effectiveMappingCache, true);
 
         // Apply runtime overrides if provided
         if (runtimeOptions) {
@@ -2704,12 +2696,6 @@ var fumifier = (function() {
             bindFhirClientFunctions(exec_env);
           }
         }
-
-        const timestamp = new Date();
-        const executionId = utils.generateUuid();
-        exec_env.timestamp = timestamp;
-        exec_env.executionId = executionId;
-        exec_env.bind('executionId', executionId);
 
         // TODO: Expose a validation inhibitor hook (Symbol) on the environment so callers
         // can provide custom suppression logic for certain validations. See enforcePolicy().
