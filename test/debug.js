@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-/* eslint-disable strict */
 import fs from 'fs';
 import path from 'path';
 import fumifier from '../src/fumifier.js';
