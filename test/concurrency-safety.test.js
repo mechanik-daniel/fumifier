@@ -35,6 +35,32 @@ describe('Concurrency safety', () => {
     expect(new Set(ids).size).to.equal(ids.length);
   });
 
+  it('should not leak $ (root input) across concurrent verbose evaluations', async () => {
+    const compiled = await fumifier('($before := $.payload; $pause($.delay); $after := $.payload; {"before": $before, "after": $after, "id": $executionId})');
+    compiled.registerFunction('pause', pause);
+
+    const inputs = [
+      { payload: 'A', delay: 25 },
+      { payload: 'B', delay: 5 },
+      { payload: 'C', delay: 15 },
+      { payload: 'D', delay: 1 }
+    ];
+
+    const reports = await Promise.all(inputs.map((input) => compiled.evaluateVerbose(input)));
+
+    for (let i = 0; i < reports.length; i++) {
+      expect(reports[i].status).to.equal(200);
+      expect(reports[i].ok).to.equal(true);
+      expect(reports[i].result.before).to.equal(inputs[i].payload);
+      expect(reports[i].result.after).to.equal(inputs[i].payload);
+      expect(reports[i].executionId).to.be.a('string');
+      expect(reports[i].result.id).to.equal(reports[i].executionId);
+    }
+
+    const ids = reports.map(r => r.executionId);
+    expect(new Set(ids).size).to.equal(ids.length);
+  });
+
   it('should keep $millis stable within an evaluation (even across awaits)', async () => {
     const compiled = await fumifier('($start := $millis(); $pause(20); $end := $millis(); {"start": $start, "end": $end, "id": $executionId})');
     compiled.registerFunction('pause', pause);
