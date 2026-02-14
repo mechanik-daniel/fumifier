@@ -251,9 +251,13 @@ export default function (path) {
       )
     ) {
       let url = path.substring(position, position += 4); // at least the 4 first chars have been confirmed to be part of the string
-      while (position < length && path.charAt(position) !== ')' && !/[\s]/.test(path.charAt(position))) {
-        // swallow any thing until encountering a ')' or any whitespace
-        url += path.charAt(position);
+      while (position < length) {
+        const ch = path.charAt(position);
+        // swallow any thing until encountering a structural delimiter or whitespace
+        if (ch === ')' || ch === ']' || ch === '}' || ch === ',' || ch === ';' || /[\s]/.test(ch)) {
+          break;
+        }
+        url += ch;
         position++;
       }
       return create('url', url);
