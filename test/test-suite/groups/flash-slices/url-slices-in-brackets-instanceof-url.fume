@@ -1,0 +1,4 @@
+InstanceOf: http://hl7.org/fhir/StructureDefinition/Patient
+* extension[patient-birthPlace].valueAddress.text = 'neverland'
+* gender
+  * extension[http://hl7.org/fhir/StructureDefinition/data-absent-reason].valueCode = 'unknown'
