@@ -683,7 +683,7 @@ const parser = (() => {
               token: node.value,
             });
           }
-          if (node.type !== 'name' && node.type !== 'number') {
+          if (node.type !== 'name' && node.type !== 'number' && node.type !== 'url') {
             return handleError({
               code: "F1027", // invalid slice token
               position: node.position,

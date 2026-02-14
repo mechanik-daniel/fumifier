@@ -1,0 +1,50 @@
+[
+  {
+    "description": "Slice syntax supports URL inside brackets (Patient extension + primitive _gender) - should PASS",
+    "data": null,
+    "result": {
+      "resourceType": "Patient",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/patient-birthPlace",
+          "valueAddress": {
+            "text": "a"
+          }
+        }
+      ],
+      "_gender": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+            "valueCode": "unknown"
+          }
+        ]
+      }
+    },
+    "expr-file": "url-slices-in-brackets.fume"
+  },
+  {
+    "description": "URL InstanceOf with URL slice brackets (Patient) - should PASS",
+    "data": null,
+    "result": {
+      "resourceType": "Patient",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/patient-birthPlace",
+          "valueAddress": {
+            "text": "neverland"
+          }
+        }
+      ],
+      "_gender": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+            "valueCode": "unknown"
+          }
+        ]
+      }
+    },
+    "expr-file": "url-slices-in-brackets-instanceof-url.fume"
+  }
+]

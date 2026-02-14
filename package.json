@@ -1,6 +1,6 @@
 {
   "name": "fumifier",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Fumifier is the core FLASH DSL engine inside FUME - It parses, compiles and executes FHIR related transformation logic expressed with FUME's specialized syntax (FLASH) and applies it to JSON data structures.",
   "author": "Outburn Ltd.",
   "main": "./dist/index.cjs",
@@ -98,7 +98,7 @@
     "chai": "^6.2.2",
     "chai-as-promised": "^8.0.2",
     "eslint": "9.39.2",
-    "eslint-plugin-jsdoc": "^62.5.0",
+    "eslint-plugin-jsdoc": "^62.5.4",
     "eslint-plugin-promise": "^7.2.1",
     "fhir-package-explorer": "^1.9.2",
     "fhir-snapshot-generator": "^2.2.2",
