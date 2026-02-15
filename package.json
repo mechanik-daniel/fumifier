@@ -120,7 +120,7 @@
   "peerDependencies": {
     "@outburn/fhir-client": "^1.5.0",
     "@outburn/structure-navigator": "^1.9.1",
-    "@outburn/types": "^0.1.0",
+    "@outburn/types": "^0.1.0 || ^0.2.0",
     "fhir-package-explorer": "^1.9.2",
     "fhir-snapshot-generator": "^2.2.0",
     "fhir-terminology-runtime": "^1.2.0"
