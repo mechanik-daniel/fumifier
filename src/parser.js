@@ -586,6 +586,21 @@ const parser = (() => {
           }
         }
         var rule = expression(0, true);
+        if (recover && (rule.type === '(error)' || rule.type === 'error')) {
+          rules.push({
+            type: 'error',
+            error: rule.error || rule,
+            position: rule.position,
+            start: rule.start,
+            line: rule.line
+          });
+          if (node.id === ';') advance();
+          if (node.id !== "(indent)" || node.value !== level) {
+            break;
+          }
+          advance("(indent)");
+          continue;
+        }
         // ensure expression is either a flashrule or a bind rule
         if (rule.type !== 'flashrule' && rule.id !== ':=') {
           if (rule.id === '=') {
@@ -811,6 +826,9 @@ const parser = (() => {
           advance(".", true);
         }
         this.path = parseFlashPath();
+        if (recover && (this.path.type === '(error)' || this.path.type === 'error')) {
+          return this.path;
+        }
         if (node.id === '=') {
           advance('=');
           if (node.id !== '(end)' && node.id !== '(indent)') {
